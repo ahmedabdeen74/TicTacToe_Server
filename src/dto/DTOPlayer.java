@@ -15,7 +15,7 @@ public class DTOPlayer {
     private int playerId;
     private String username;
     private String password;
-    //private String email;
+    private String email;
     private String status; // "available" or "in game"
     private int score;
     private Socket socket;
@@ -31,6 +31,26 @@ public class DTOPlayer {
         this.playerId = playerId;
         this.username = username;
         this.status = status;
+    }
+     public DTOPlayer() {
+        this.username = "";
+        this.password="";
+        this.email="";
+        this.status = "";
+        this.score = 0;
+        this.socket = null;
+    }
+      public DTOPlayer(String username,String password,String email, String status, int score, Socket socket) {
+        this.username = username;
+        this.password=password;
+        this.email=email;
+        this.status = status;
+        this.score = score;
+        this.socket = socket;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public int getPlayerId() {
@@ -52,9 +72,14 @@ public class DTOPlayer {
     public String getPassword() {
         return password;
     }
+   
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public Socket getSocket() {
