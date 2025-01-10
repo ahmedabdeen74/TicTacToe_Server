@@ -13,15 +13,15 @@ import javafx.stage.Stage;
 
 /**
  *
- * @author DeSkToP
+ * @author Mohamed Sameh
  */
 public class TicTacToeServer extends Application {
     
     @Override
     public void start(Stage stage) throws Exception {
         
-        new ServerManager();
-        Parent root = new ServerUI();
+        System.out.println("UI");
+        Parent root = FXMLLoader.load(getClass().getResource("server.fxml"));
         
         Scene scene = new Scene(root);
         

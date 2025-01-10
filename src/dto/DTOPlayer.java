@@ -5,22 +5,28 @@
  */
 package dto;
 
+import java.net.Socket;
+
 /**
  *
  * @author Mohamed Sameh
  */
 public class DTOPlayer {
     private int playerId;
-
-
-    private String uname;
     private String username;
     private String password;
-    private String email;
+    //private String email;
     private String status; // "available" or "in game"
     private int score;
+    private Socket socket;
     
-    
+    public DTOPlayer(String username, String status, int score, Socket socket) {
+        this.username = username;
+        this.status = status;
+        this.score = score;
+        this.socket = socket;
+    }
+
     public DTOPlayer(int playerId, String username, String status) {
         this.playerId = playerId;
         this.username = username;
@@ -51,12 +57,12 @@ public class DTOPlayer {
         this.password = password;
     }
 
-    public String getEmail() {
-        return email;
+    public Socket getSocket() {
+        return socket;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setSocket(Socket socket) {
+        this.socket = socket;
     }
 
     public String getStatus() {
@@ -73,14 +79,6 @@ public class DTOPlayer {
 
     public void setScore(int score) {
         this.score = score;
-    }
-    
-    public String getUname() {
-        return uname;
-    }
-
-    public void setUname(String uname) {
-        this.uname = uname;
     }
     
     

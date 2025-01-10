@@ -13,7 +13,9 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -30,23 +32,56 @@ public class ServerManager {
     
     private ServerSocket serverGame;
     Socket clientSocket;
-    Map<Socket, DTOPlayer> onlinePlayers = new HashMap<>();
+    private boolean running = true;
+    private List<ClientHandler> clientHandlers = new ArrayList<>();
     
-    public ServerManager(){
+    public ServerManager() {
+        System.out.println("running " + running);
         try {
-            serverGame = new ServerSocket(5005);
-            System.out.println(" ----------- Start the Server -----------");
-            while(true){
-                clientSocket = serverGame.accept();
-                new ClientHandler(clientSocket);
+            serverGame = new ServerSocket(5005); // Start server on port 5005
+            System.out.println("----------- Start the Server -----------");
+
+            // Start a new thread to handle client connections
+            new Thread(() -> {
+                while (running) {
+                    try {
+                        // Blocking call waiting for client connections
+                        clientSocket = serverGame.accept();
+                        if (clientSocket != null) 
+                        {
+                            ClientHandler handler = new ClientHandler(clientSocket);
+                            clientHandlers.add(handler); 
+                        }
+                    } catch (IOException e) {
+                        if (!running) 
+                        {
+                            // Break the loop if server is stopping
+                            break;
+                        }
+                        e.printStackTrace(); 
+                    }
+                }
+            }).start();
+        } catch (IOException ex) {
+            ex.printStackTrace(); 
+        }
+    }
+    
+    public void stopServer() {
+        running = false;
+        try {
+            if(serverGame != null && !serverGame.isClosed()) 
+            {
+                serverGame.close();
+                System.out.println("----------- Server Stopped -----------");
+            }
+             // Interrupt each client handler thread (if they are running)
+            for(ClientHandler handler : clientHandlers) 
+            {
+                handler.stopHandler(); // Make sure to stop client processing
             }
         } catch (IOException ex) {
-            try {
-                Logger.getLogger(ServerManager.class.getName()).log(Level.SEVERE, null, ex);
-                serverGame.close();
-            } catch (IOException ex1) {
-                ex.printStackTrace();
-            }
+            ex.printStackTrace();
         }
     }
     
@@ -62,7 +97,9 @@ class ClientHandler extends Thread{
     public String data;
     private JSONObject jsonMsg;
     static Vector<ClientHandler> clients = new Vector<ClientHandler>();
-
+    static Map<String, DTOPlayer> onlinePlayers = new HashMap<>();
+     private boolean running = true;
+     
     public ClientHandler(Socket soc) {
         try {
             this.soc = soc;
@@ -77,7 +114,6 @@ class ClientHandler extends Thread{
 
     @Override
     public void run() {
-
         try {
             while (true) {
                 data = dis.readLine(); // Read data from client
@@ -85,7 +121,7 @@ class ClientHandler extends Thread{
                     System.out.println("Break ");
                     break; // Client disconnected or sent an empty message
                 }
-                jsonHandle(data);
+                handleJSON(data);
             }
         } catch (IOException | ParseException ex) {
             System.out.println("Client disconnected: " + soc.getInetAddress());
@@ -94,18 +130,18 @@ class ClientHandler extends Thread{
         }
     }
     
-    private void cleanup() {
-        try {
-            if (ps != null) ps.close();
-            if (dis != null) dis.close();
-            if (soc != null) soc.close();
-            clients.remove(this); // Remove from active clients
-            System.out.println("Client removed: " + soc.getInetAddress());
-        } catch (IOException ex) {
-            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    private void jsonHandle(String data) throws ParseException{
+    public void stopHandler() {
+           running = false; 
+           try {
+               if (soc != null && !soc.isClosed()) 
+               {
+                   soc.close(); // Close the client socket to end the connection
+               }
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+       }
+    private void handleJSON(String data) throws ParseException{
         JSONParser parser = new JSONParser();
             
         jsonMsg = (JSONObject) parser.parse(data);
@@ -117,12 +153,19 @@ class ClientHandler extends Thread{
                    int res = DAO.createPlayer(jsonMsg);
                    Map<String, String> result = new HashMap<>();
                    
-                   if(res == 1){
-                        System.out.println("Hello-----------" +  jsonMsg.get("username").toString() + " Resgistered successfully");
+                   if(res == 1)
+                   {
+                        String username = jsonMsg.get("username").toString();
+                        System.out.println("Hello-----------" +  username + " Resgistered successfully");
 
                         result.put("type", "register");
-                        result.put("status", ""+res);              
-                   }else {
+                        result.put("status", ""+res);    
+                        DTOPlayer player = new DTOPlayer(username, "online", 0, soc);
+                        onlinePlayers.put(username, player);
+                        System.out.println(onlinePlayers);
+                   }
+                   else 
+                   {
                         System.out.println("Hello-----------" +  jsonMsg.get("username").toString() + "Resgistered failed");
                         result.put("type", "register");
                         result.put("status", ""+res);     
@@ -147,4 +190,23 @@ class ClientHandler extends Thread{
         this.ps.println(data.toJSONString());
     }
     
+    private void cleanup() {
+        try {
+            // Remove the player from the onlinePlayers map
+            if (jsonMsg != null && jsonMsg.containsKey("username")) {
+                String username = jsonMsg.get("username").toString();
+                onlinePlayers.remove(username);
+                System.out.println("Player removed: " + username);
+            }
+            
+            if (ps != null) ps.close();
+            if (dis != null) dis.close();
+            if (soc != null) soc.close();
+            
+            clients.remove(this); // Remove from active clients
+            System.out.println("Client removed: " + soc.getInetAddress());
+        } catch (IOException ex) {
+            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }
