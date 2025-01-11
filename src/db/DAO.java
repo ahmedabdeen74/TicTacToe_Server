@@ -31,20 +31,23 @@ public class DAO {
         Connection con =  DriverManager.getConnection(DB_URL, 
            DB_USER, DB_PASSWORD);
         JSONObject check=selectIndexPlayer(player);
-        if(check.get("username").toString() == null ? player.get("username").toString() == null : check.get("username").toString().equals(player.get("username").toString()))
+      /* if(check.get("username").toString()==player.get("username").toString())
         {
             System.out.println("Player Aleady Exist"+check.get("username").toString());
             return 0;
-        }
-        else{
+        }*/
+       // else{
+            System.out.println("Hello From CreatPlayer");
             PreparedStatement stmt = con.prepareStatement(
                 "INSERT INTO players (username,email, password, status) VALUES (?,?, ?, ?)"
             );
             String password= player.get("password").toString();
             String newPass=getEncryptedPassWord(password);
+            String email = player.get("email") != null ? player.get("email").toString() : "default@example.com";
+
 
             stmt.setString(1, player.get("username").toString()); 
-            stmt.setString(2, player.get("email").toString()); 
+            stmt.setString(2, email); 
             stmt.setString(3,newPass); 
             stmt.setString(4, "online"); 
 
@@ -54,7 +57,7 @@ public class DAO {
             con.close();
 
             return res;
-        }
+        //}
     }
     //Encrypt anf Decrypt
     public static String getEncryptedPassWord(String newPass)
@@ -85,7 +88,7 @@ public class DAO {
     public static int updateStudent(JSONObject player) throws SQLException{
      DriverManager.registerDriver(new ClientDriver());
        Connection con=DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
-       PreparedStatement stmt=con.prepareStatement("UPDATE player SET username = ?, email = ?, password = ?,status=? WHERE User_name = ?" ,
+       PreparedStatement stmt=con.prepareStatement("UPDATE players SET username = ?, email = ?, password = ?,status=? WHERE User_name = ?" ,
              ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         
            stmt.setString(1, player.get("username").toString()); 
@@ -100,7 +103,7 @@ public class DAO {
        
     }
    public static JSONObject selectIndexPlayer(JSONObject player) throws SQLException {
-    String query = "SELECT * FROM Player WHERE User_name = ?";
+    String query = "SELECT * FROM Players WHERE username = ?";
      Connection con=DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
     PreparedStatement stmt = con.prepareStatement(query);
     stmt.setString(1, player.get("username").toString());
@@ -113,6 +116,7 @@ public class DAO {
                 result.put("password",rs.getString("password"));
                 result.put("status",rs.getString("status"));
                 }
+     System.out.println("Hello from the SelectIndex");
     stmt.close();
     con.close();
     return result; 
