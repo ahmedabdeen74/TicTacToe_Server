@@ -146,6 +146,7 @@ class ClientHandler extends Thread{
             
         jsonMsg = (JSONObject) parser.parse(data);
             
+
         switch(jsonMsg.get("type").toString()){
             case "register":
                 try {
