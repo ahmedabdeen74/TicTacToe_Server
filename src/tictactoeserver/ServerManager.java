@@ -35,7 +35,9 @@ public class ServerManager {
     private boolean running = true;
     private List<ClientHandler> clientHandlers = new ArrayList<>();
     
-    public ServerManager() {
+    
+    public ServerManager(ServerUIController controller) {
+
         System.out.println("running " + running);
         try {
             serverGame = new ServerSocket(5005); // Start server on port 5005
@@ -49,7 +51,7 @@ public class ServerManager {
                         clientSocket = serverGame.accept();
                         if (clientSocket != null) 
                         {
-                            ClientHandler handler = new ClientHandler(clientSocket);
+                            ClientHandler handler = new ClientHandler(clientSocket, controller);
                             clientHandlers.add(handler); 
                         }
                     } catch (IOException e) {
@@ -97,10 +99,12 @@ class ClientHandler extends Thread{
     public String data;
     private JSONObject jsonMsg;
     static Vector<ClientHandler> clients = new Vector<ClientHandler>();
-    static Map<String, DTOPlayer> onlinePlayers = new HashMap<>();
-     private boolean running = true;
+    static List<String> onlinePlayers = new ArrayList<>();
+    private boolean running = true;
+    ServerUIController controlerUI;
      
-    public ClientHandler(Socket soc) {
+    public ClientHandler(Socket soc, ServerUIController cont) {
+        controlerUI = cont;
         try {
             this.soc = soc;
             dis =  new DataInputStream(soc.getInputStream());
@@ -125,6 +129,7 @@ class ClientHandler extends Thread{
             }
         } catch (IOException | ParseException ex) {
             System.out.println("Client disconnected: " + soc.getInetAddress());
+            
         } finally {
             cleanup(); // Cleanup resources
         }
@@ -145,8 +150,6 @@ class ClientHandler extends Thread{
         JSONParser parser = new JSONParser();
             
         jsonMsg = (JSONObject) parser.parse(data);
-            
-
         switch(jsonMsg.get("type").toString()){
             case "register":
                 try {
@@ -157,13 +160,12 @@ class ClientHandler extends Thread{
                    if(res == 1)
                    {
                         String username = jsonMsg.get("username").toString();
-                        System.out.println("Hello-----------" +  username + " Resgistered successfully");
+                        System.out.println("Hello----------- " +  username + " Resgistered successfully");
 
                         result.put("type", "register");
-                        result.put("status", ""+res);    
-                        DTOPlayer player = new DTOPlayer(username, "online", 0, soc);
-                        onlinePlayers.put(username, player);
-                        System.out.println(onlinePlayers);
+                        result.put("status", ""+res);
+                        onlinePlayers.add(username);
+                        controlerUI.addOnlinePlayer(username);
                    }
                    else 
                    {
@@ -193,13 +195,13 @@ class ClientHandler extends Thread{
     
     private void cleanup() {
         try {
-            // Remove the player from the onlinePlayers map
+            // Remove the player from the onlinePlayers list
             if (jsonMsg != null && jsonMsg.containsKey("username")) {
                 String username = jsonMsg.get("username").toString();
                 onlinePlayers.remove(username);
                 System.out.println("Player removed: " + username);
-            }
-            
+                controlerUI.removeOnlinePlayer(username);
+            }            
             if (ps != null) ps.close();
             if (dis != null) dis.close();
             if (soc != null) soc.close();

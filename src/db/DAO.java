@@ -28,16 +28,16 @@ public class DAO {
         int res = 0;
 
         DriverManager.registerDriver(new ClientDriver());
-        Connection con =  DriverManager.getConnection(DB_URL, 
-           DB_USER, DB_PASSWORD);
-        int check=checkPlayer(player);
-       if(check>0)
+        Connection con =  DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        int check = checkPlayer(player);
+        if(check>0)
         {
             System.out.println("Player Aleady Exist"+player.get("username").toString());
             return 0;
         }
-       else{
-            System.out.println("Hello From CreatPlayer");
+        else
+        {
+            System.out.println("Hello From createPlayer");
             PreparedStatement stmt = con.prepareStatement(
                 "INSERT INTO players (username,email, password, status) VALUES (?,?, ?, ?)"
             );
@@ -58,6 +58,22 @@ public class DAO {
 
             return res;
         }
+    }
+    
+    public static int loginPlayer(JSONObject player) throws SQLException {
+        
+        DriverManager.registerDriver(new ClientDriver());
+        Connection con =  DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+       
+        PreparedStatement stmt = con.prepareStatement(
+            "SELECT * FROM Players WHERE username = ?"
+        );
+        
+        ResultSet rs = stmt.executeQuery();
+        
+        
+        
+        return 0;
     }
     //Encrypt anf Decrypt
     public static String getEncryptedPassWord(String newPass)
@@ -121,9 +137,9 @@ public class DAO {
     con.close();
     return result; 
 }
-     public static int checkPlayer(JSONObject player) throws SQLException {
+    public static int checkPlayer(JSONObject player) throws SQLException {
     String query = "SELECT * FROM Players WHERE username = ?";
-     Connection con=DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
+    Connection con=DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
     PreparedStatement stmt = con.prepareStatement(query);
     stmt.setString(1, player.get("username").toString());
     ResultSet rs=stmt.executeQuery();
@@ -132,7 +148,7 @@ public class DAO {
      while(rs.next()){
                 result=1;
                 }
-     System.out.println("Hello from the SelectIndex");
+    System.out.println("Hello from the SelectIndex");
     stmt.close();
     con.close();
     return result; 
