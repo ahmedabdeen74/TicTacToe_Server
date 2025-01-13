@@ -59,6 +59,7 @@ public class DAO {
             return res;
         }
     }
+
     //Encrypt anf Decrypt
     public static String getEncryptedPassWord(String newPass)
     {
@@ -137,4 +138,63 @@ public class DAO {
     con.close();
     return result; 
 }
+   public static int validatePlayer(JSONObject player) throws SQLException {
+        System.out.println("hello from login");
+        String username = player.get("username").toString();
+        String inputPassword = player.get("password").toString();
+        int result = 0;
+        String query = "SELECT * FROM Players WHERE username = ?";
+        try (Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = con.prepareStatement(query)) {
+
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            String storedPassword="";
+           // String encryptedInputPassword="";
+
+            if (rs.next()) {
+            storedPassword = getDncryptedPassWord(rs.getString("password"));
+            if (storedPassword.equals(inputPassword)) {
+                System.out.println("Correct password");
+                result = 1;
+            } else {
+                System.out.println("Incorrect password");
+            }
+        } else {
+            System.out.println("Username does not exist: " + username);
+        }
+    }
+
+    return result;
 }
+    
+
+    /*public static String getEncryptedPassword(String password) {
+        StringBuilder encryptedPassword = new StringBuilder();
+        for (char c : password.toCharArray()) {
+            c += 3;
+            encryptedPassword.append(c);
+        }
+        return encryptedPassword.toString();
+    }*/
+
+   /* public static int doesUsernameExist(String username) throws SQLException {
+        String query = "SELECT COUNT(*) FROM Players WHERE username = ?";
+        try (Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = con.prepareStatement(query)) {
+
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+        return 0;
+    }*/
+}
+
+
+     
+     
+
