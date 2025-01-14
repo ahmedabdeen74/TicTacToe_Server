@@ -9,13 +9,15 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
+import javafx.collections.SetChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -30,20 +32,47 @@ public class ServerUIController implements Initializable {
     private Button stopBtn;
     @FXML
     private ListView<String> onlinePlayersList;
-    private ObservableList<String> playerData;
+    private ObservableSet<String> playerData;
+
+            
+    String selectedPlayer = "";
     
     private ServerManager serverManager;
-    private Thread serverThread;
 
-    
+    @FXML
+    private Label selectedItem;
+
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        // TODO
+        // Initialize the ObservableList and bind it to the ListView
+        
+        System.out.println("ServerUIController");
+        playerData = FXCollections.observableSet();
+
+        onlinePlayersList.getSelectionModel().selectedItemProperty().addListener((observable) -> {
+            selectedPlayer = onlinePlayersList.getSelectionModel().getSelectedItem();
+            selectedItem.setText(selectedPlayer);
+        });
+        
+        
+        playerData.addListener((SetChangeListener.Change<? extends String> c) -> {
+            if (c.wasAdded()) {
+                onlinePlayersList.getItems().add(c.getElementAdded());
+            }
+            if (c.wasRemoved()) {
+                onlinePlayersList.getItems().remove(c.getElementRemoved());
+            }
+        }); 
+
+    }    
     
     @FXML
     private void startButtonClicked(ActionEvent event) {
         
         if (serverManager == null) {
 
-            serverManager = new ServerManager();
-           
+            serverManager = new ServerManager(this);
             System.out.println("Server started!");
             startBtn.setDisable(true); // Disable the Start button
             stopBtn.setDisable(false); // Enable the Stop button
@@ -53,39 +82,26 @@ public class ServerUIController implements Initializable {
     @FXML
     private void stopButtonClicked(ActionEvent event) {
   
-
         serverManager.stopServer();
 
         serverManager = null;
-                
         System.out.println("Server stopped!");
         startBtn.setDisable(false);
         stopBtn.setDisable(true);
        
     }
 
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        // TODO
-        // Initialize the ObservableList and bind it to the ListView
-        System.out.println("I'm controller");
-        playerData = FXCollections.observableArrayList();
-        
-        onlinePlayersList.setItems(playerData);
-
-        // Initial data display (optional)
-        updateOnlinePlayers();
-    }    
-    
-    public void updateOnlinePlayers() {
-        System.out.println("Online : ");
+    public void addOnlinePlayer(String username) {
         Platform.runLater(() -> {
-            playerData.clear(); // Clear the current list
-            ClientHandler.onlinePlayers.values().forEach(player -> {
-                playerData.add("Username: " + player.getUsername() + ", Status: " + player.getStatus());
-            });
-            onlinePlayersList.setItems(playerData); // Update the ListView
+            playerData.add(username);
         });
     }
+    public void removeOnlinePlayer(String username) {
+        Platform.runLater(() -> {
+            playerData.remove(username);
+        });
+    }
+    
+    
 
 }
