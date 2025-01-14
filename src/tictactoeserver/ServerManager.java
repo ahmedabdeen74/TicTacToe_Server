@@ -99,7 +99,11 @@ class ClientHandler extends Thread{
     public String data;
     private JSONObject jsonMsg;
     static Vector<ClientHandler> clients = new Vector<ClientHandler>();
+    
     static List<String> onlinePlayers = new ArrayList<>();
+    
+    static Map<String, ClientHandler> onlinePlayerSocs = new HashMap<>();
+    
     private boolean running = true;
     ServerUIController controlerUI;
      
@@ -119,17 +123,13 @@ class ClientHandler extends Thread{
     @Override
     public void run() {
         try {
-            while (true) {
-                data = dis.readLine(); // Read data from client
-                if (data == null || data.isEmpty()) {
-                    System.out.println("Break ");
-                    break; // Client disconnected or sent an empty message
-                }
+            while ((data = dis.readLine()) != null) {
+                System.out.println("Received: " + data);
                 handleJSON(data);
+       
             }
         } catch (IOException | ParseException ex) {
             System.out.println("Client disconnected: " + soc.getInetAddress());
-            
         } finally {
             cleanup(); // Cleanup resources
         }
@@ -146,6 +146,9 @@ class ClientHandler extends Thread{
                e.printStackTrace();
            }
        }
+    
+    
+
     private void handleJSON(String data) throws ParseException{
         JSONParser parser = new JSONParser();
             
@@ -160,12 +163,14 @@ class ClientHandler extends Thread{
                    if(res == 1)
                    {
                         String username = jsonMsg.get("username").toString();
+                        onlinePlayerSocs.put(username, this);
                         System.out.println("Hello----------- " +  username + " Resgistered successfully");
 
                         result.put("type", "register");
                         result.put("status", ""+res);
                         onlinePlayers.add(username);
                         controlerUI.addOnlinePlayer(username);
+                        
                    }
                    else 
                    {
@@ -174,14 +179,31 @@ class ClientHandler extends Thread{
                         result.put("status", ""+res);     
                    }
                    sendJSONResponse(result);
+                   broadcastOnlineList();
                 } catch (SQLException ex) {
                     Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
                 break;
-                case "login":
-//                    createPlayer();
-                    break;
+            case "login":
+//             createPlayer();
+               break;
+               
+            case "sendGameReq":
+                String challenged = jsonMsg.get("challenged").toString();
+                String challenger = jsonMsg.get("challenger").toString();
+                System.out.println("player "+  challenged + "is challanged");
+                Map<String, String> req = new HashMap<>();
+
+                req.put("type", "receiveGameReq");
+                req.put("challenger", challenger);
+                
+                JSONObject reqJSON = new JSONObject();
+                reqJSON.putAll(req);
+                onlinePlayerSocs.get(challenged).ps.println(reqJSON.toJSONString());
+                break;
+            default:
+                System.out.println("Unhandled message type: " + jsonMsg.get("type").toString());
             }
        
        }
@@ -193,6 +215,17 @@ class ClientHandler extends Thread{
         this.ps.println(data.toJSONString());
     }
     
+    private void broadcastOnlineList(){
+        JSONObject message = new JSONObject();
+        message.put("type", "onlinePlayers");
+        message.put("players", onlinePlayers);
+        
+        for (ClientHandler client : clients) {
+            client.ps.println(message.toJSONString());
+        }  
+    }
+    
+    
     private void cleanup() {
         try {
             // Remove the player from the onlinePlayers list
@@ -200,7 +233,9 @@ class ClientHandler extends Thread{
                 String username = jsonMsg.get("username").toString();
                 onlinePlayers.remove(username);
                 System.out.println("Player removed: " + username);
+                onlinePlayerSocs.remove(username, soc);
                 controlerUI.removeOnlinePlayer(username);
+                broadcastOnlineList();
             }            
             if (ps != null) ps.close();
             if (dis != null) dis.close();

@@ -17,6 +17,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -37,7 +38,7 @@ public class ServerUIController implements Initializable {
     String selectedPlayer = "";
     
     private ServerManager serverManager;
-    private Thread serverThread;
+
     @FXML
     private Label selectedItem;
 
@@ -46,7 +47,7 @@ public class ServerUIController implements Initializable {
         // TODO
         // Initialize the ObservableList and bind it to the ListView
         
-        System.out.println("I'm controller");
+        System.out.println("ServerUIController");
         playerData = FXCollections.observableSet();
 
         onlinePlayersList.getSelectionModel().selectedItemProperty().addListener((observable) -> {
@@ -101,5 +102,7 @@ public class ServerUIController implements Initializable {
         });
          // Remove the player from the ObservableSet
     }
+    
+    
 
 }
