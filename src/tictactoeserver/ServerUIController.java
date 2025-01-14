@@ -100,7 +100,6 @@ public class ServerUIController implements Initializable {
         Platform.runLater(() -> {
             playerData.remove(username);
         });
-         // Remove the player from the ObservableSet
     }
     
     

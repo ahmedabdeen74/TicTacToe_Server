@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,10 +78,10 @@ public class ServerManager {
                 serverGame.close();
                 System.out.println("----------- Server Stopped -----------");
             }
-             // Interrupt each client handler thread (if they are running)
+             // Interrupt each client handler thread 
             for(ClientHandler handler : clientHandlers) 
             {
-                handler.stopHandler(); // Make sure to stop client processing
+                handler.stopHandler(); // Make sure to stop each client processing
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -99,7 +100,7 @@ class ClientHandler extends Thread{
     public String data;
     private JSONObject jsonMsg;
     static Vector<ClientHandler> clients = new Vector<ClientHandler>();
-    
+    private DTOPlayer playerData;
     static List<String> onlinePlayers = new ArrayList<>();
     
     static Map<String, ClientHandler> onlinePlayerSocs = new HashMap<>();
@@ -113,6 +114,7 @@ class ClientHandler extends Thread{
             this.soc = soc;
             dis =  new DataInputStream(soc.getInputStream());
             ps = new PrintStream(soc.getOutputStream());
+            playerData = new DTOPlayer();
             ClientHandler.clients.add(this);
             start();
         } catch (IOException ex) {
@@ -120,13 +122,16 @@ class ClientHandler extends Thread{
         }
     }
 
-    @Override
+@Override
     public void run() {
         try {
-            while ((data = dis.readLine()) != null) {
-                System.out.println("Received: " + data);
+            while (true) {
+                data = dis.readLine(); // Read data from client
+                if (data == null || data.isEmpty()) {
+                    System.out.println("Break ");
+                    break; // Client disconnected 
+                }
                 handleJSON(data);
-       
             }
         } catch (IOException | ParseException ex) {
             System.out.println("Client disconnected: " + soc.getInetAddress());
@@ -134,25 +139,25 @@ class ClientHandler extends Thread{
             cleanup(); // Cleanup resources
         }
     }
-    
+  
     public void stopHandler() {
-           running = false; 
-           try {
-               if (soc != null && !soc.isClosed()) 
-               {
-                   soc.close(); // Close the client socket to end the connection
-               }
-           } catch (IOException e) {
-               e.printStackTrace();
-           }
+        //running = false; 
+        try {
+            if (soc != null && !soc.isClosed()) 
+            {
+                 soc.close(); // Close the client socket to end the connection
+            }
+        } catch (IOException e) {
+             e.printStackTrace();
+        }
        }
     
     
-
-    private void handleJSON(String data) throws ParseException{
+    private void handleJSON(String data) throws ParseException{        
         JSONParser parser = new JSONParser();
-            
         jsonMsg = (JSONObject) parser.parse(data);
+        
+        
         switch(jsonMsg.get("type").toString()){
             case "register":
                 try {
@@ -162,14 +167,15 @@ class ClientHandler extends Thread{
                    
                    if(res == 1)
                    {
-                        String username = jsonMsg.get("username").toString();
-                        onlinePlayerSocs.put(username, this);
-                        System.out.println("Hello----------- " +  username + " Resgistered successfully");
+                        playerData.setUsername(jsonMsg.get("username").toString()); 
+                        playerData.setEmail(jsonMsg.get("email").toString()); 
+                        onlinePlayerSocs.put(playerData.getUsername(), this);
+                        System.out.println("Hello----------- " +  playerData.getUsername() + " Resgistered successfully");
 
                         result.put("type", "register");
                         result.put("status", ""+res);
-                        onlinePlayers.add(username);
-                        controlerUI.addOnlinePlayer(username);
+                        onlinePlayers.add(playerData.getUsername());
+                        controlerUI.addOnlinePlayer(playerData.getUsername());
                         
                    }
                    else 
@@ -192,7 +198,7 @@ class ClientHandler extends Thread{
             case "sendGameReq":
                 String challenged = jsonMsg.get("challenged").toString();
                 String challenger = jsonMsg.get("challenger").toString();
-                System.out.println("player "+  challenged + "is challanged");
+                System.out.println("player "+  challenged + " is challanged");
                 Map<String, String> req = new HashMap<>();
 
                 req.put("type", "receiveGameReq");
@@ -201,6 +207,46 @@ class ClientHandler extends Thread{
                 JSONObject reqJSON = new JSONObject();
                 reqJSON.putAll(req);
                 onlinePlayerSocs.get(challenged).ps.println(reqJSON.toJSONString());
+                
+                // Send acknowledgment to challenger
+                Map<String, String> ack = new HashMap<>();
+                ack.put("type", "requestSent");
+                ack.put("status", "success");
+                ack.put("challenged", challenged);
+                sendJSONResponse(ack);
+                break;
+
+            case "gameReqResponse":
+                String challenger1 = jsonMsg.get("challenger").toString();
+                String challenged1 = jsonMsg.get("challenged").toString();
+                String status = jsonMsg.get("status").toString();
+                
+                ClientHandler challengerHandler = onlinePlayerSocs.get(challenger1);
+                
+                if(challengerHandler != null){
+                    Map<String, String> notification = new HashMap<>();
+                    notification.put("type", "gameReqResult");
+                    notification.put("status", status);
+                    notification.put("challenged", challenged1);
+                    
+//                    if (status.equals("accepted")) {
+//                        // Generate a unique game ID
+//                        String gameId = UUID.randomUUID().toString();
+//                        notification.put("gameId", gameId);
+//
+//                        // If accepted, send game start info to both players
+//                        Map<String, String> gameStart = new HashMap<>();
+//                        gameStart.put("type", "gameStart");
+//                        gameStart.put("gameId", gameId);
+//                        gameStart.put("opponent", challenger1);
+//                        this.sendJSONResponse(gameStart);  // Send to challenged player
+//
+//                        gameStart.put("opponent", challenged1);
+//                        challengerHandler.sendJSONResponse(gameStart);  // Send to challenger
+//                    }
+
+                    challengerHandler.sendJSONResponse(notification);
+                }
                 break;
             default:
                 System.out.println("Unhandled message type: " + jsonMsg.get("type").toString());
@@ -211,7 +257,6 @@ class ClientHandler extends Thread{
     public void sendJSONResponse(Map<String, String> fields) {
         JSONObject data = new JSONObject();
         data.putAll(fields);
-        System.out.println("Sending response to " +  jsonMsg.get("username").toString());
         this.ps.println(data.toJSONString());
     }
     
@@ -229,14 +274,14 @@ class ClientHandler extends Thread{
     private void cleanup() {
         try {
             // Remove the player from the onlinePlayers list
-            if (jsonMsg != null && jsonMsg.containsKey("username")) {
-                String username = jsonMsg.get("username").toString();
-                onlinePlayers.remove(username);
-                System.out.println("Player removed: " + username);
-                onlinePlayerSocs.remove(username, soc);
-                controlerUI.removeOnlinePlayer(username);
+            if (playerData.getUsername() != null) {
+                System.out.println("Player removed: " + playerData.getUsername());
+                onlinePlayers.remove(playerData.getUsername());
+                onlinePlayerSocs.remove(playerData.getUsername());
+                controlerUI.removeOnlinePlayer(playerData.getUsername());
                 broadcastOnlineList();
-            }            
+            }         
+            
             if (ps != null) ps.close();
             if (dis != null) dis.close();
             if (soc != null) soc.close();
