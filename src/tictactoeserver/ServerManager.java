@@ -100,6 +100,7 @@ class ClientHandler extends Thread{
     static Map<String, DTOPlayer> onlinePlayers = new HashMap<>();
      private boolean running = true;
      
+     
     public ClientHandler(Socket soc) {
         try {
             this.soc = soc;
