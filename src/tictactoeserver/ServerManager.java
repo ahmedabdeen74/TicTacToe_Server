@@ -7,6 +7,7 @@ package tictactoeserver;
 
 import db.DAO;
 import dto.DTOPlayer;
+import game.GameSession;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -35,6 +36,7 @@ public class ServerManager {
     Socket clientSocket;
     private boolean running = true;
     private List<ClientHandler> clientHandlers = new ArrayList<>();
+   
     
     
     public ServerManager(ServerUIController controller) {
@@ -102,6 +104,7 @@ class ClientHandler extends Thread{
     static Vector<ClientHandler> clients = new Vector<ClientHandler>();
     private DTOPlayer playerData;
     static List<String> onlinePlayers = new ArrayList<>();
+     private static Map<String, GameSession> activeGames = new HashMap<>();
     
     static Map<String, ClientHandler> onlinePlayerSocs = new HashMap<>();
     
@@ -257,14 +260,51 @@ class ClientHandler extends Thread{
                     notification.put("type", "gameReqResult");
                     notification.put("status", status);
                     notification.put("challenged", challenged1);
-                    
-//                    if (status.equals("accepted")) {
+                  
 
-//                    }
 
                     challengerHandler.sendJSONResponse(notification);
                 }
+                  if ("accepted".equals(status)) {
+                        GameSession gameSession = new GameSession(challenger1, challenged1);
+                        activeGames.put(challenger1, gameSession);
+                        activeGames.put(challenged1, gameSession);
+
+                        sendGameUpdate(challenger1, gameSession);
+                        sendGameUpdate(challenged1, gameSession);
+                    } else {
+                        notifyPlayer(challenger1, "gameReqResult", "status", "rejected");
+                    }
                 break;
+               case "makeMove":
+                String player = jsonMsg.get("player").toString();
+                int position = Integer.parseInt(jsonMsg.get("position").toString());
+
+                GameSession session = activeGames.get(player);
+                if (session != null && session.getCurrentPlayer().equals(player)) {
+                    if (session.makeMove(player, position)) {
+                        String opponent = session.getOpponent(player);
+
+                        sendGameUpdate(player, session);
+                        sendGameUpdate(opponent, session);
+
+                        if (session.checkWin()) {
+                            notifyPlayer(player, "gameOver", "status", "win");
+                            notifyPlayer(opponent, "gameOver", "status", "lose");
+                            activeGames.remove(player);
+                            activeGames.remove(opponent);
+                        } else if (session.isDraw()) {
+                            notifyPlayer(player, "gameOver", "status", "draw");
+                            notifyPlayer(opponent, "gameOver", "status", "draw");
+                            activeGames.remove(player);
+                            activeGames.remove(opponent);
+                        }
+                    } else {
+                        notifyPlayer(player, "invalidMove", "message", "Invalid move. Try again.");
+                    }
+                }
+                break;
+
             default:
                 System.out.println("Unhandled message type: " + jsonMsg.get("type").toString());
 
@@ -287,7 +327,20 @@ class ClientHandler extends Thread{
             client.ps.println(message.toJSONString());
         }  
     }
-    
+    private void sendGameUpdate(String player, GameSession session) {
+        Map<String, String> update = new HashMap<>();
+        update.put("type", "gameUpdate");
+        update.put("board", session.getBoard());
+        update.put("currentTurn", session.getCurrentPlayer());
+        onlinePlayerSocs.get(player).sendJSONResponse(update);
+    }
+
+    private void notifyPlayer(String player, String type, String key, String value) {
+        Map<String, String> notification = new HashMap<>();
+        notification.put("type", type);
+        notification.put(key, value);
+        onlinePlayerSocs.get(player).sendJSONResponse(notification);
+    }
     
     private void cleanup() {
         try {
