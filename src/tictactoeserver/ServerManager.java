@@ -191,7 +191,7 @@ class ClientHandler extends Thread{
                 }
 
                 break;
-            case "login":
+        case "login":
                     try {
                  System.out.println("Login-----------");
                    int res = DAO.validatePlayer(jsonMsg);
@@ -205,8 +205,8 @@ class ClientHandler extends Thread{
                         result.put("type", "login");
                         result.put("status", ""+res);    
                         DTOPlayer player = new DTOPlayer(username, "online", 0, soc);
-                        onlinePlayers.put(username, player);
-                        System.out.println(onlinePlayers);
+                        onlinePlayers.add(playerData.getUsername());
+                        controlerUI.addOnlinePlayer(playerData.getUsername());
                    }
                    else 
                    {
@@ -267,6 +267,8 @@ class ClientHandler extends Thread{
             }
        
        }
+    
+
     
     public void sendJSONResponse(Map<String, String> fields) {
         JSONObject data = new JSONObject();
