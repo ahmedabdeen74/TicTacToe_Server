@@ -33,7 +33,6 @@ import javafx.application.Platform;
 
 public class ClientHandler extends Thread{
 
-    
     // ear
     public DataInputStream dis;
     // mouth
@@ -118,7 +117,6 @@ public class ClientHandler extends Thread{
                         result.put("status", ""+res);
                         onlinePlayers.add(playerData.getUsername());
                         controlerUI.addOnlinePlayer(playerData.getUsername());
-                        
                    }
                    else 
                    {
@@ -134,29 +132,31 @@ public class ClientHandler extends Thread{
 
                 break;
             case "login":
-                    try {
-                 System.out.println("Login-----------");
-                   int res = DAO.validatePlayer(jsonMsg);
-                   Map<String, String> result = new HashMap<>();
-                   
-                   if(res == 1)
-                   {
-                        String username = jsonMsg.get("username").toString();
-                        System.out.println("Hello-----------" +  username + " Login successfully");
+                try {
+                    System.out.println("Login-----------");
+                    int res = DAO.validatePlayer(jsonMsg);
+                    Map<String, String> result = new HashMap<>();
+
+                    if(res == 1)
+                    {
+                        playerData.setUsername(jsonMsg.get("username").toString()); 
+                        onlinePlayerSocs.put(playerData.getUsername(), this);
+                        System.out.println("Hello-----------" +  playerData.getUsername() + " Login successfully");
 
                         result.put("type", "login");
-                        result.put("status", ""+res);    
-                        DTOPlayer player = new DTOPlayer(username, "online", 0, soc);
-                        //onlinePlayers.put(username, player);
-                        System.out.println(onlinePlayers);
-                   }
-                   else 
-                   {
-                        System.out.println("Hello-----------" +  jsonMsg.get("username").toString() + "Login failed");
+                        result.put("status", ""+res); 
+                        
+                        onlinePlayers.add(playerData.getUsername());
+                        controlerUI.addOnlinePlayer(playerData.getUsername());
+
+                    }
+                    else 
+                    {
+                        System.out.println("Hello-----------" +  jsonMsg.get("username").toString() + " Login failed");
                         result.put("type", "login");
                         result.put("status", ""+res);     
-                   }
-                   sendJSONResponse(result);
+                    }
+                    sendJSONResponse(result);
                 } catch (SQLException ex) {
                     Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }                   

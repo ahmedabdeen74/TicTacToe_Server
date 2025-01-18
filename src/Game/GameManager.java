@@ -200,38 +200,57 @@ public class GameManager {
         System.out.println("Checking game end. Winner: " + winner);
 
         if (winner != null || isBoardFull(session.board)) {
-            JSONObject endMsg = new JSONObject();
-            endMsg.put("type", "gameEnd");
-            
-            if (winner != null) {
-                String winnerName;
-                if (winner.equals("X")) {
-                    winnerName = session.player1.playerData.getUsername();
-                    endMsg.put("result", "win");
-                    endMsg.put("winner", winnerName);
-                    session.player1.sendMessage(endMsg.toJSONString());
-                    
-                    endMsg.put("result", "lose");
-                    endMsg.put("winner", winnerName);
-                    session.player2.sendMessage(endMsg.toJSONString());
-                } else {
-                    winnerName = session.player1.playerData.getUsername();
-                    endMsg.put("result", "win");
-                    endMsg.put("winner", winnerName);
-                    session.player2.sendMessage(endMsg.toJSONString());
-                    
-                    endMsg.put("result", "lose");
-                    endMsg.put("winner", winnerName);
-                    session.player1.sendMessage(endMsg.toJSONString());
-               }
-            } else {
-                System.out.println("Game is a draw");
-                endMsg.put("result", "draw");
-            }
             try {
+                if (winner != null) {
+                    String winnerName;
+
+                    JSONObject p1Msg = new JSONObject();
+                    p1Msg.put("type", "gameEnd");
+                    
+
+                    JSONObject p2Msg = new JSONObject();
+                    p2Msg.put("type", "gameEnd");
+                    
+                    if (winner.equals("X")) {
+                        winnerName = session.player1.playerData.getUsername();
+                        
+                        // Player 1 wins
+                        p1Msg.put("result", "win");
+                        p1Msg.put("winner", winnerName);
+                        
+                        // Player 2 loses
+                        p2Msg.put("result", "lose");
+                        p2Msg.put("winner", winnerName);
+                    } else {
+                        winnerName = session.player2.playerData.getUsername();  
+                        
+                        // Player 2 wins
+                        p1Msg.put("result", "lose");
+                        p1Msg.put("winner", winnerName);
+                        
+                        // Player 1 loses
+                        p2Msg.put("result", "win");
+                        p2Msg.put("winner", winnerName);
+                    }
+                    
+                    // Send messages to both players
+                    session.player1.sendMessage(p1Msg.toJSONString());
+                    session.player2.sendMessage(p2Msg.toJSONString());
+                    
+                } else {
+                    // It's a draw
+                    System.out.println("Game is a draw");
+                    JSONObject drawMsg = new JSONObject();
+                    drawMsg.put("type", "gameEnd");
+                    drawMsg.put("result", "draw");
+                    
+                    // Send draw message to both players
+                    session.player1.sendMessage(drawMsg.toJSONString());
+                    session.player2.sendMessage(drawMsg.toJSONString());
+                }
 
                 // Add a small delay to ensure messages are sent
-                Thread.sleep(500);
+                Thread.sleep(800);
                 
                 // Clean up session
                 String sessionId = findSessionId(session.player1);
@@ -240,15 +259,16 @@ public class GameManager {
                     System.out.println("Game session removed: " + sessionId);
                 }
                 
-                // Use a new thread for broadcasting to avoid concurrent modification
+                // Broadcast updated online list
                 new Thread(() -> {
                     synchronized(ClientHandler.clients) {
                         ClientHandler.broadcastOnlineList();
                     }
                 }).start();
                 
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 System.out.println("Error during game end: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }

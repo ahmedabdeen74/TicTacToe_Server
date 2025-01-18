@@ -21,8 +21,10 @@ public class TicTacToeServer extends Application {
     public void start(Stage stage) throws Exception {
         
         System.out.println("UI");
-        Parent root = FXMLLoader.load(getClass().getResource("server.fxml"));
-        
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("server.fxml"));
+        Parent root = loader.load();
+        ServerUIController controller = loader.getController();
+        controller.setStage(stage); 
         Scene scene = new Scene(root);
         
         stage.setScene(scene);

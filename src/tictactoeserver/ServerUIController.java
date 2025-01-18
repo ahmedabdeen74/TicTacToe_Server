@@ -17,6 +17,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.stage.Stage;
 import org.json.simple.JSONObject;
 
 /**
@@ -34,14 +35,16 @@ public class ServerUIController implements Initializable {
     private ListView<String> onlinePlayersList;
     private ObservableSet<String> playerData;
 
-            
+    private Stage stage;
+    
     String selectedPlayer = "";
     
     private ServerManager serverManager;
 
     @FXML
     private Label selectedItem;
-
+    
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
@@ -54,8 +57,8 @@ public class ServerUIController implements Initializable {
             selectedPlayer = onlinePlayersList.getSelectionModel().getSelectedItem();
             selectedItem.setText(selectedPlayer);
         });
-        
-        
+       
+
         playerData.addListener((SetChangeListener.Change<? extends String> c) -> {
             if (c.wasAdded()) {
                 onlinePlayersList.getItems().add(c.getElementAdded());
@@ -102,6 +105,21 @@ public class ServerUIController implements Initializable {
         });
     }
     
-    
+    public void setStage(Stage stage) {
+
+        this.stage = stage;
+        
+        stage.setOnCloseRequest(event -> {
+            try {
+                serverManager.stopServer(); // Gracefully stop the server
+                System.out.println("Server stopped.");
+            } catch (Exception e) {
+//                System.err.println("Error stopping the server: " + e.getMessage());
+            } finally {
+                Platform.exit(); // Exit JavaFX thread
+                System.exit(0);  // Terminate application
+            }
+        });
+    }
 
 }

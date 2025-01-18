@@ -36,10 +36,8 @@ public class ServerManager {
     private boolean running = true;
     private List<ClientHandler> clientHandlers = new ArrayList<>();
     
-    
     public ServerManager(ServerUIController controller) {
 
-        System.out.println("running " + running);
         try {
             serverGame = new ServerSocket(5005); // Start server on port 5005
             System.out.println("----------- Start the Server -----------");
