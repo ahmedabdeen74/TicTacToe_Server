@@ -266,6 +266,7 @@ class ClientHandler extends Thread{
                     challengerHandler.sendJSONResponse(notification);
                 }
                   if ("accepted".equals(status)) {
+                      System.out.println("Hello From accepted");
                         GameSession gameSession = new GameSession(challenger1, challenged1);
                         activeGames.put(challenger1, gameSession);
                         activeGames.put(challenged1, gameSession);
@@ -300,6 +301,7 @@ class ClientHandler extends Thread{
                             activeGames.remove(opponent);
                         }
                     } else {
+                        System.out.println("Just get rejected dooooooog");
                         notifyPlayer(player, "invalidMove", "message", "Invalid move. Try again.");
                     }
                 }
@@ -328,6 +330,7 @@ class ClientHandler extends Thread{
         }  
     }
     private void sendGameUpdate(String player, GameSession session) {
+        System.out.println("Hello from sendGameUpdate");
         Map<String, String> update = new HashMap<>();
         update.put("type", "gameUpdate");
         update.put("board", session.getBoard());
@@ -336,6 +339,7 @@ class ClientHandler extends Thread{
     }
 
     private void notifyPlayer(String player, String type, String key, String value) {
+        System.out.println("Hello from notifyPlayer");
         Map<String, String> notification = new HashMap<>();
         notification.put("type", type);
         notification.put(key, value);

@@ -16,6 +16,7 @@ public class GameSession {
     private boolean isPlayer1Turn = true;
 
     public GameSession(String player1, String player2) {
+        System.out.println("Hello From Game Session");
         this.player1 = player1;
         this.player2 = player2;
         for (int i = 0; i < board.length; i++) {
