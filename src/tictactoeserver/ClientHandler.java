@@ -157,6 +157,7 @@ public class ClientHandler extends Thread{
                         result.put("status", ""+res);     
                     }
                     sendJSONResponse(result);
+                    broadcastOnlineList();
                 } catch (SQLException ex) {
                     Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }                   
