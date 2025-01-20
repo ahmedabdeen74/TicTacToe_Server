@@ -43,6 +43,7 @@ public class ClientHandler extends Thread{
     public static Vector<ClientHandler> clients = new Vector<ClientHandler>();
     public DTOPlayer playerData;
     static List<String> onlinePlayers = new ArrayList<>();
+    static List<String> gamePlayers = new ArrayList<>();
     
     static Map<String, ClientHandler> onlinePlayerSocs = new HashMap<>();
     
@@ -111,6 +112,8 @@ public class ClientHandler extends Thread{
                         playerData.setUsername(jsonMsg.get("username").toString()); 
                         playerData.setEmail(jsonMsg.get("email").toString()); 
                         playerData.setStatus(jsonMsg.get("status").toString()); 
+                        int upRes=DAO.updateStatus(jsonMsg);
+                        if(upRes==1){System.out.println("Status updateded");}
 
                         onlinePlayerSocs.put(playerData.getUsername(), this);
                         System.out.println("Hello----------- " +  playerData.getUsername() + " Resgistered successfully");
@@ -143,6 +146,8 @@ public class ClientHandler extends Thread{
                     {
                         playerData.setUsername(jsonMsg.get("username").toString());
                         playerData.setStatus(jsonMsg.get("status").toString());
+                        int upRes=DAO.updateStatus(jsonMsg);
+                        if(upRes==1){System.out.println("Status updateded");}
                         onlinePlayerSocs.put(playerData.getUsername(), this);
                         System.out.println("Hello-----------" +  playerData.getUsername() + " Login successfully");
 
@@ -184,6 +189,8 @@ public class ClientHandler extends Thread{
             case "gameReqResponse":
                 String challenger1 = jsonMsg.get("challenger").toString();
                 String challenged1 = jsonMsg.get("challenged").toString();
+                String challengerStatus = jsonMsg.get("challengerStatus").toString();
+                String challengedStatus = jsonMsg.get("challengedStatus").toString();
                 String status = jsonMsg.get("status").toString();
                 
                 // Find both players' handlers
@@ -198,7 +205,25 @@ public class ClientHandler extends Thread{
                     
                
                     if (status.equals("accepted")) {
-                        GameManager.startNewGame(challengerHandler, challengedHandler);
+                        try {
+                            GameManager.startNewGame(challengerHandler, challengedHandler);
+                            int client1=DAO.updateStatus(challenger1,challengerStatus);
+                            int client2=DAO.updateStatus(challenged1,challengedStatus );
+                            if(client1==1&&client2==1){System.out.println("Players in the game");}
+                            for(String player:onlinePlayers)
+                            {
+                                if(player.equals(challenger1)||player.equals(challenged1))
+                                {
+                                    onlinePlayers.remove(player);
+                                }
+                            }
+                            gamePlayers.add(challenged1);
+                            gamePlayers.add(challenger1);
+
+                        } catch (SQLException ex) {
+                            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        
                     }
 
                     challengerHandler.sendJSONResponse(notification);
@@ -255,6 +280,7 @@ public class ClientHandler extends Thread{
                 
                 synchronized(clients) {
                     onlinePlayers.remove(username);
+                    gamePlayers.remove(username);
                     onlinePlayerSocs.remove(username);
                     clients.remove(this);
                 }

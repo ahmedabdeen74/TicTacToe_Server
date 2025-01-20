@@ -105,7 +105,7 @@ public class DAO {
     public static int updateStudent(JSONObject player) throws SQLException{
      DriverManager.registerDriver(new ClientDriver());
        Connection con=DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
-       PreparedStatement stmt=con.prepareStatement("UPDATE players SET username = ?, email = ?, password = ?,status=? WHERE User_name = ?" ,
+       PreparedStatement stmt=con.prepareStatement("UPDATE players SET username = ?, email = ?, password = ?,status=? WHERE username = ?" ,
              ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         
            stmt.setString(1, player.get("username").toString()); 
@@ -122,7 +122,7 @@ public class DAO {
         public static int updateStatus(JSONObject player) throws SQLException{
             DriverManager.registerDriver(new ClientDriver());
             Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            PreparedStatement stmt = con.prepareStatement("UPDATE players SET status=? WHERE User_name = ?",
+            PreparedStatement stmt = con.prepareStatement("UPDATE players SET status=? WHERE username = ?",
                     ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
             stmt.setString(1, player.get("status").toString());
             stmt.setString(2, player.get("username").toString());
