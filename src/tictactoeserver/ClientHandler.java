@@ -42,8 +42,8 @@ public class ClientHandler extends Thread{
     private JSONObject jsonMsg;
     public static Vector<ClientHandler> clients = new Vector<ClientHandler>();
     public DTOPlayer playerData;
-    static List<String> onlinePlayers = new ArrayList<>();
-    static List<String> gamePlayers = new ArrayList<>();
+    public  static List<String> onlinePlayers = new ArrayList<>();
+   // static List<String> gamers = GameManager.gamePlayers;
     
     static Map<String, ClientHandler> onlinePlayerSocs = new HashMap<>();
     
@@ -189,8 +189,6 @@ public class ClientHandler extends Thread{
             case "gameReqResponse":
                 String challenger1 = jsonMsg.get("challenger").toString();
                 String challenged1 = jsonMsg.get("challenged").toString();
-                String challengerStatus = jsonMsg.get("challengerStatus").toString();
-                String challengedStatus = jsonMsg.get("challengedStatus").toString();
                 String status = jsonMsg.get("status").toString();
                 
                 // Find both players' handlers
@@ -205,24 +203,21 @@ public class ClientHandler extends Thread{
                     
                
                     if (status.equals("accepted")) {
-                        try {
-                            GameManager.startNewGame(challengerHandler, challengedHandler);
-                            int client1=DAO.updateStatus(challenger1,challengerStatus);
-                            int client2=DAO.updateStatus(challenged1,challengedStatus );
-                            if(client1==1&&client2==1){System.out.println("Players in the game");}
-                            for(String player:onlinePlayers)
+                       
+                            GameManager.startNewGame(challengerHandler, challengedHandler,controlerUI);
+                           /* for(String player:onlinePlayers)
                             {
                                 if(player.equals(challenger1)||player.equals(challenged1))
                                 {
                                     onlinePlayers.remove(player);
                                 }
-                            }
-                            gamePlayers.add(challenged1);
-                            gamePlayers.add(challenger1);
+                            }*/
+                          //  gamePlayers.add(challenged1);
+                          //  gamePlayers.add(challenger1);
+                          //  controlerUI.addInGamePlayer(challenged1);
+                        //  controlerUI.addInGamePlayer(challenger1);
 
-                        } catch (SQLException ex) {
-                            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+
                         
                     }
 
@@ -252,12 +247,19 @@ public class ClientHandler extends Thread{
         this.ps.println(data);
     }
     
-    public static void broadcastOnlineList() {
-        synchronized(clients) {
+  public static void broadcastOnlineList() {
+    synchronized (clients) {
+        synchronized (onlinePlayers) {
+            // Remove players who are also in gamers
+            onlinePlayers.removeIf(GameManager.gamePlayers::contains);
+
+            // Construct the message
             JSONObject message = new JSONObject();
             message.put("type", "onlinePlayers");
-            message.put("players", new ArrayList<>(onlinePlayers)); 
+            message.put("players", new ArrayList<>(onlinePlayers));
+
             System.out.println("broadcastOnlineList " + onlinePlayers);
+
             // Create a copy of clients to avoid concurrent modification
             List<ClientHandler> clientsCopy = new ArrayList<>(clients);
             for (ClientHandler client : clientsCopy) {
@@ -269,7 +271,8 @@ public class ClientHandler extends Thread{
             }
         }
     }
-    
+}
+
     
     private void cleanup() {
         try {
@@ -280,7 +283,6 @@ public class ClientHandler extends Thread{
                 
                 synchronized(clients) {
                     onlinePlayers.remove(username);
-                    gamePlayers.remove(username);
                     onlinePlayerSocs.remove(username);
                     clients.remove(this);
                 }

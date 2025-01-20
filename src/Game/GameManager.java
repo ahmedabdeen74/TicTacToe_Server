@@ -5,10 +5,13 @@
  */
 package Game;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.json.simple.JSONObject;
 import tictactoeserver.ClientHandler;
+import tictactoeserver.ServerUIController;
 
 /**
  *
@@ -18,7 +21,8 @@ import tictactoeserver.ClientHandler;
 
 public class GameManager {
     private static Map<String, GameSession> activeSessions = new HashMap<>();
-
+   public static List<String> gamePlayers = new ArrayList<>();
+   static ServerUIController controlerUI;
     
     
     private static class GameSession {
@@ -44,12 +48,26 @@ public class GameManager {
     
     
     // start the game then waiting for moves from the first player
-    public static void startNewGame(ClientHandler player1, ClientHandler player2) {
+    public static void startNewGame(ClientHandler player1, ClientHandler player2,ServerUIController controlerUI) {
+        GameManager.controlerUI=controlerUI;
         GameSession session = new GameSession(player1, player2);
         String sessionId = player1.playerData.getUsername() + "_vs_" + player2.playerData.getUsername();
         activeSessions.put(sessionId, session);
         
+        
+        if (controlerUI == null) {
+            System.err.println("Error: ControlerUI is not initialized.");
+            return;
+        }
         System.out.println(activeSessions.toString());
+        synchronized (gamePlayers) {
+            gamePlayers.add(player1.playerData.getUsername());
+            gamePlayers.add(player2.playerData.getUsername());
+        }
+
+        // Update UI with in-game players
+        controlerUI.addInGamePlayer(player1.playerData.getUsername().toString());
+        controlerUI.addInGamePlayer(player2.playerData.getUsername().toString());
         
         // Notify player1 (X)
         JSONObject p1Start = new JSONObject();
@@ -258,14 +276,27 @@ public class GameManager {
                     activeSessions.remove(sessionId);
                     System.out.println("Game session removed: " + sessionId);
                 }
+                gamePlayers.remove(session.player1.playerData.getUsername());
+                gamePlayers.remove(session.player2.playerData.getUsername());
+                controlerUI.removeInGamePlayer(session.player1.playerData.getUsername());
+                controlerUI.removeInGamePlayer(session.player2.playerData.getUsername());
+                ClientHandler.onlinePlayers.add(session.player1.playerData.getUsername());
+                ClientHandler.onlinePlayers.add(session.player2.playerData.getUsername());
+
+              
                 
                 // Broadcast updated online list
                 new Thread(() -> {
+             
                     synchronized(ClientHandler.clients) {
                         ClientHandler.broadcastOnlineList();
                     }
                 }).start();
                 
+
+
+                
+        
             } catch (Exception e) {
                 System.out.println("Error during game end: " + e.getMessage());
                 e.printStackTrace();
