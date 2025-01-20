@@ -182,6 +182,32 @@ public class DAO {
     }
 
     return result;
+    
+}
+   public static int getScore(String username) throws SQLException {
+    int score = 0;
+    String query = "SELECT score FROM players WHERE username = ?";
+    try (Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+         PreparedStatement stmt = con.prepareStatement(query)) {
+        stmt.setString(1, username);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            score = rs.getInt("score");
+        }
+    }
+    return score;
+}
+
+   public static int updateScore(String username, int newScore) throws SQLException {
+    int res = 0;
+    String query = "UPDATE players SET score = ? WHERE username = ?";
+    try (Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+         PreparedStatement stmt = con.prepareStatement(query)) {
+        stmt.setInt(1, newScore);
+        stmt.setString(2, username);
+        res = stmt.executeUpdate();
+    }
+    return res;
 }
     
 
