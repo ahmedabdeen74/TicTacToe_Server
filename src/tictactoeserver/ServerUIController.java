@@ -43,6 +43,8 @@ public class ServerUIController implements Initializable {
 
     @FXML
     private Label selectedItem;
+    @FXML
+    private ListView<?> ingamePlayersList;
     
     
     @Override
