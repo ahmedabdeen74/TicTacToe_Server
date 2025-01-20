@@ -205,6 +205,7 @@ public class ClientHandler extends Thread{
                     if (status.equals("accepted")) {
                        
                             GameManager.startNewGame(challengerHandler, challengedHandler,controlerUI);
+                            broadcastOnlineList();
                            /* for(String player:onlinePlayers)
                             {
                                 if(player.equals(challenger1)||player.equals(challenged1))
