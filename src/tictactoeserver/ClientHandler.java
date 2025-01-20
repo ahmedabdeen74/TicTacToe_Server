@@ -132,37 +132,37 @@ public class ClientHandler extends Thread{
             }
           break;
             case "login":
-                try {
-                    System.out.println("Login-----------");
-                    int res = DAO.validatePlayer(jsonMsg);
-                    Map<String, String> result = new HashMap<>();
+            try {
+             System.out.println("Login-----------");
+             int res = DAO.validatePlayer(jsonMsg);
+             Map<String, String> result = new HashMap<>();
 
-                    if(res == 1)
-                    {
-                        playerData.setUsername(jsonMsg.get("username").toString()); 
-                        onlinePlayerSocs.put(playerData.getUsername(), this);
-                        System.out.println("Hello-----------" +  playerData.getUsername() + " Login successfully");
+            if (res == 1) {
+            playerData.setUsername(jsonMsg.get("username").toString());
+            onlinePlayerSocs.put(playerData.getUsername(), this);
+            System.out.println("Hello-----------" + playerData.getUsername() + " Login successfully");
 
-                        result.put("type", "login");
-                        result.put("status", ""+res); 
-                        
-                        onlinePlayers.add(playerData.getUsername());
-                        controlerUI.addOnlinePlayer(playerData.getUsername());
-                        
+            // Get the player's current score
+            int score = DAO.getScore(playerData.getUsername());
+            playerData.setScore(score);
 
-                    }
-                    else 
-                    {
-                        System.out.println("Hello-----------" +  jsonMsg.get("username").toString() + " Login failed");
-                        result.put("type", "login");
-                        result.put("status", ""+res);     
-                    }
-                    sendJSONResponse(result);
-                    broadcastOnlineList();
-                } catch (SQLException ex) {
-                    Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-                }                   
-                    break;
+            result.put("type", "login");
+            result.put("status", "" + res);
+            result.put("score", "" + score); // Send the score to the client
+
+            onlinePlayers.add(playerData.getUsername());
+            controlerUI.addOnlinePlayer(playerData.getUsername());
+            }else{
+            System.out.println("Hello-----------" + jsonMsg.get("username").toString() + " Login failed");
+            result.put("type", "login");
+            result.put("status", "" + res);
+            }
+            sendJSONResponse(result);
+            broadcastOnlineList();
+            }catch(SQLException ex) {
+            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            break;
                
             case "sendGameReq":
                 String challenged = jsonMsg.get("challenged").toString();
