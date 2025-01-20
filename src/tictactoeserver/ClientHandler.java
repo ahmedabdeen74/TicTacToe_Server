@@ -101,36 +101,36 @@ public class ClientHandler extends Thread{
         
         switch(jsonMsg.get("type").toString()){
             case "register":
-                try {
-                 System.out.println("Regsitration-----------");
-                   int res = DAO.createPlayer(jsonMsg);
-                   Map<String, String> result = new HashMap<>();
-                   
-                   if(res == 1)
-                   {
-                        playerData.setUsername(jsonMsg.get("username").toString()); 
-                        playerData.setEmail(jsonMsg.get("email").toString()); 
-                        onlinePlayerSocs.put(playerData.getUsername(), this);
-                        System.out.println("Hello----------- " +  playerData.getUsername() + " Resgistered successfully");
+            try {
+            System.out.println("Regsitration-----------");
+            int res = DAO.createPlayer(jsonMsg);
+           Map<String, String> result = new HashMap<>();
+            if (res == 1) {
+            playerData.setUsername(jsonMsg.get("username").toString());
+            playerData.setEmail(jsonMsg.get("email").toString());
+            onlinePlayerSocs.put(playerData.getUsername(), this);
+            System.out.println("Hello----------- " + playerData.getUsername() + " Resgistered successfully");
 
-                        result.put("type", "register");
-                        result.put("status", ""+res);
-                        onlinePlayers.add(playerData.getUsername());
-                        controlerUI.addOnlinePlayer(playerData.getUsername());
-                   }
-                   else 
-                   {
-                        System.out.println("Hello-----------" +  jsonMsg.get("username").toString() + "Resgistered failed");
-                        result.put("type", "register");
-                        result.put("status", ""+res);     
-                   }
-                   sendJSONResponse(result);
-                   broadcastOnlineList();
-                } catch (SQLException ex) {
-                    Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-                }
+            // Set default score to 0
+            playerData.setScore(0);
 
-                break;
+            result.put("type", "register");
+            result.put("status", "" + res);
+            result.put("score", "0"); // Send default score to the client
+
+            onlinePlayers.add(playerData.getUsername());
+            controlerUI.addOnlinePlayer(playerData.getUsername());
+           }else {
+            System.out.println("Hello-----------" + jsonMsg.get("username").toString() + " Resgistered failed");
+            result.put("type", "register");
+            result.put("status", "" + res);
+            }
+             sendJSONResponse(result);
+             broadcastOnlineList();
+          } catch (SQLException ex) {
+         Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
+          break;
             case "login":
                 try {
                     System.out.println("Login-----------");
