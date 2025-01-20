@@ -110,6 +110,8 @@ public class ClientHandler extends Thread{
                    {
                         playerData.setUsername(jsonMsg.get("username").toString()); 
                         playerData.setEmail(jsonMsg.get("email").toString()); 
+                        playerData.setStatus(jsonMsg.get("status").toString()); 
+
                         onlinePlayerSocs.put(playerData.getUsername(), this);
                         System.out.println("Hello----------- " +  playerData.getUsername() + " Resgistered successfully");
 
@@ -139,7 +141,8 @@ public class ClientHandler extends Thread{
 
                     if(res == 1)
                     {
-                        playerData.setUsername(jsonMsg.get("username").toString()); 
+                        playerData.setUsername(jsonMsg.get("username").toString());
+                        playerData.setStatus(jsonMsg.get("status").toString());
                         onlinePlayerSocs.put(playerData.getUsername(), this);
                         System.out.println("Hello-----------" +  playerData.getUsername() + " Login successfully");
 
