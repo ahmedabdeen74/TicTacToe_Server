@@ -250,7 +250,7 @@ public class GameManager {
                 }
 
                 // Add a small delay to ensure messages are sent
-                Thread.sleep(800);
+                Thread.sleep(1000);
                 
                 // Clean up session
                 String sessionId = findSessionId(session.player1);
