@@ -33,31 +33,10 @@ public class Piechart extends Application {
         stage.show();
 
         // Simulate data update
-        simulateDataUpdate();
+       // simulateDataUpdate();
     }
 
-    private void simulateDataUpdate() {
-        // Example method to simulate online/offline user updates
-        new Thread(() -> {
-            try {
-                Thread.sleep(5000); // Wait for 5 seconds
-                updateUserCounts(12, 3); // Update to new values
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-
-    private void updateUserCounts(int newOnlineUsers, int newOfflineUsers) {
-        onlineUsers = newOnlineUsers;
-        offlineUsers = newOfflineUsers;
-
-        Platform.runLater(() -> {
-            pieChartData.get(0).setPieValue(onlineUsers);
-            pieChartData.get(1).setPieValue(offlineUsers);
-        });
-    }
-
+   
     public static void main(String[] args) {
         launch(args);
     }
