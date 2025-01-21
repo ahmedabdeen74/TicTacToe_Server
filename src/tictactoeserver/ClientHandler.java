@@ -230,7 +230,13 @@ public class ClientHandler extends Thread{
                 System.out.println(jsonMsg.get("symbol"));
                 GameManager.handleMove(this, jsonMsg);
                 break;
+            case "logout":
+                System.out.println(jsonMsg.get("username")+"logout");
+                onlinePlayers.remove(jsonMsg.get("username").toString());
+                controlerUI.removeOnlinePlayer(jsonMsg.get("username").toString());
+                broadcastOnlineList();
                 
+                break;   
             default:
                 System.out.println("Unhandled message type: " + jsonMsg.get("type").toString());
 
