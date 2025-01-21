@@ -4,19 +4,26 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
+import javafx.collections.SetChangeListener;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class Piechart extends Application {
 
     private ObservableList<PieChart.Data> pieChartData;
-    private int onlineUsers = 10; // Example initial value
-    private int offlineUsers = 5;  // Example initial value
+    private ObservableSet<String> playerData;
+    private int onlineUsers;
+    private int offlineUsers;
 
     @Override
     public void start(Stage stage) {
+        playerData = FXCollections.observableSet();
         pieChartData = FXCollections.observableArrayList(
             new PieChart.Data("Online Users", onlineUsers),
             new PieChart.Data("Offline Users", offlineUsers)
@@ -32,21 +39,14 @@ public class Piechart extends Application {
         stage.setScene(scene);
         stage.show();
 
-        // Simulate data update
-        simulateDataUpdate();
+        setupDataListeners();
     }
-    private void simulateDataUpdate() {
-        // Example method to simulate online/offline user updates
-        new Thread(() -> {
-            try {
-                Thread.sleep(5000); // Wait for 5 seconds
-                updateUserCounts(12, 3); // Update to new values
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+
+    private void setupDataListeners() {
+        playerData.addListener((SetChangeListener.Change<? extends String> c) -> {
+            updateUserCounts(playerData.size(), 0); // Assuming offline users are 0 for simplicity
+        });
     }
-     
 
     private void updateUserCounts(int newOnlineUsers, int newOfflineUsers) {
         onlineUsers = newOnlineUsers;
@@ -58,8 +58,18 @@ public class Piechart extends Application {
         });
     }
 
+    public void addOnlinePlayer(String username) {
+        Platform.runLater(() -> {
+            playerData.add(username);
+        });
+    }
 
-   
+    public void removeOnlinePlayer(String username) {
+        Platform.runLater(() -> {
+            playerData.remove(username);
+        });
+    }
+
     public static void main(String[] args) {
         launch(args);
     }

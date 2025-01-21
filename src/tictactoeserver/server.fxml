@@ -52,5 +52,6 @@
             <Image url="@../Images/welcome.gif" />
          </image>
       </ImageView>
+      <Button fx:id="showPieChartBtn" layoutX="83.0" layoutY="151.0" mnemonicParsing="false" onAction="#showPieChartButtonClicked" text="pieChart" />
    </children>
 </AnchorPane>

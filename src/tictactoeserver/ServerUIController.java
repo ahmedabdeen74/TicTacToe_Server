@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tictactoeserver;
 
 import java.net.URL;
@@ -18,19 +13,16 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
-import org.json.simple.JSONObject;
 
-/**
- *
- * @author Mohamed Sameh
- */
 public class ServerUIController implements Initializable {
-    
+
     private Label label;
     @FXML
     private Button startBtn;
     @FXML
     private Button stopBtn;
+    @FXML
+    private Button showPieChartBtn; // New button for showing the pie chart
     @FXML
     private ListView<String> onlinePlayersList;
     private ObservableSet<String> playerData;
@@ -43,21 +35,15 @@ public class ServerUIController implements Initializable {
 
     @FXML
     private Label selectedItem;
-    
-    
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
-        // Initialize the ObservableList and bind it to the ListView
-        
-        System.out.println("ServerUIController");
         playerData = FXCollections.observableSet();
 
         onlinePlayersList.getSelectionModel().selectedItemProperty().addListener((observable) -> {
             selectedPlayer = onlinePlayersList.getSelectionModel().getSelectedItem();
             selectedItem.setText(selectedPlayer);
         });
-       
 
         playerData.addListener((SetChangeListener.Change<? extends String> c) -> {
             if (c.wasAdded()) {
@@ -66,60 +52,57 @@ public class ServerUIController implements Initializable {
             if (c.wasRemoved()) {
                 onlinePlayersList.getItems().remove(c.getElementRemoved());
             }
-        }); 
+        });
+    }
 
-    }    
-    
     @FXML
     private void startButtonClicked(ActionEvent event) {
-        
         if (serverManager == null) {
-
             serverManager = new ServerManager(this);
             System.out.println("Server started!");
-            startBtn.setDisable(true); // Disable the Start button
-            stopBtn.setDisable(false); // Enable the Stop button
+            startBtn.setDisable(true);
+            stopBtn.setDisable(false);
         }
     }
 
     @FXML
     private void stopButtonClicked(ActionEvent event) {
-  
-        serverManager.stopServer();
-
-        serverManager = null;
-        System.out.println("Server stopped!");
-        startBtn.setDisable(false);
-        stopBtn.setDisable(true);
-       
+        if (serverManager != null) {
+            serverManager.stopServer();
+            serverManager = null;
+            System.out.println("Server stopped!");
+            startBtn.setDisable(false);
+            stopBtn.setDisable(true);
+        }
     }
+
+   
 
     public void addOnlinePlayer(String username) {
         Platform.runLater(() -> {
             playerData.add(username);
         });
     }
+
     public void removeOnlinePlayer(String username) {
         Platform.runLater(() -> {
             playerData.remove(username);
         });
     }
-    
-    public void setStage(Stage stage) {
 
+    public void setStage(Stage stage) {
         this.stage = stage;
         
         stage.setOnCloseRequest(event -> {
             try {
-                serverManager.stopServer(); // Gracefully stop the server
-                System.out.println("Server stopped.");
-            } catch (Exception e) {
-//                System.err.println("Error stopping the server: " + e.getMessage());
+                if (serverManager != null) {
+                    serverManager.stopServer();
+                    System.out.println("Server stopped.");
+                }
             } finally {
-                Platform.exit(); // Exit JavaFX thread
-                System.exit(0);  // Terminate application
+                Platform.exit();
+                System.exit(0);
             }
         });
     }
-
 }
