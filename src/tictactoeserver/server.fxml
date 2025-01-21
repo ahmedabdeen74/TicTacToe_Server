@@ -38,11 +38,11 @@
          </children>
       </FlowPane>
       <ListView fx:id="onlinePlayersList" layoutX="434.0" layoutY="105.0" prefHeight="519.0" prefWidth="161.0" />
-      <Label fx:id="selectedItem" layoutX="217.0" layoutY="105.0" text="Selected" textFill="#eee9e9">
+      <Label fx:id="selectedItem" layoutX="26.0" layoutY="63.0" text="Selected" textFill="#eee9e9">
          <font>
             <Font size="24.0" />
          </font></Label>
-      <Label layoutX="217.0" layoutY="251.0" text="Online Players" textFill="#f2ecec">
+      <Label layoutX="434.0" layoutY="63.0" text="Online Players" textFill="#f2ecec">
          <font>
             <Font size="24.0" />
          </font>
@@ -52,6 +52,15 @@
             <Image url="@../Images/welcome.gif" />
          </image>
       </ImageView>
+
       <Button fx:id="showPieChartBtn" layoutX="83.0" layoutY="151.0" mnemonicParsing="false" onAction="#showPieChartButtonClicked" text="pieChart" />
+
+      <Label layoutX="217.0" layoutY="63.0" text="InGame Player" textFill="#f2ecec">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </Label>
+      <ListView fx:id="ingamePlayersList" layoutX="213.0" layoutY="105.0" prefHeight="519.0" prefWidth="161.0" />
+
    </children>
 </AnchorPane>

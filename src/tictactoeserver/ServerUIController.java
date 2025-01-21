@@ -36,6 +36,12 @@ public class ServerUIController implements Initializable {
     @FXML
     private Label selectedItem;
 
+    @FXML
+    private ListView<String> ingamePlayersList;
+     private ObservableSet<String> gamerData;
+    
+    
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         playerData = FXCollections.observableSet();
@@ -52,8 +58,27 @@ public class ServerUIController implements Initializable {
             if (c.wasRemoved()) {
                 onlinePlayersList.getItems().remove(c.getElementRemoved());
             }
+
+        }); 
+        
+         gamerData = FXCollections.observableSet();
+
+        ingamePlayersList.getSelectionModel().selectedItemProperty().addListener((observable) -> {
+            selectedPlayer = ingamePlayersList.getSelectionModel().getSelectedItem();
+            selectedItem.setText(selectedPlayer);
         });
-    }
+       
+
+        gamerData.addListener((SetChangeListener.Change<? extends String> c) -> {
+            if (c.wasAdded()) {
+                ingamePlayersList.getItems().add(c.getElementAdded());
+            }
+            if (c.wasRemoved()) {
+                ingamePlayersList.getItems().remove(c.getElementRemoved());
+            }
+        }); 
+
+
 
     @FXML
     private void startButtonClicked(ActionEvent event) {
@@ -99,6 +124,20 @@ public class ServerUIController implements Initializable {
             playerData.remove(username);
         });
     }
+
+      public void addInGamePlayer(String username) {
+        Platform.runLater(() -> {
+            gamerData.add(username);
+        });
+    }
+    public void removeInGamePlayer(String username) {
+        Platform.runLater(() -> {
+            gamerData.remove(username);
+        });
+    }
+    
+    public void setStage(Stage stage) {
+
 
     public void setStage(Stage stage) {
         this.stage = stage;

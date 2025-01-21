@@ -49,7 +49,7 @@ public class DAO {
             stmt.setString(1, player.get("username").toString()); 
             stmt.setString(2, email); 
             stmt.setString(3,newPass); 
-            stmt.setString(4, "online"); 
+            stmt.setString(4, "offline"); 
 
             res = stmt.executeUpdate();
             System.out.println("res = "+ res);
@@ -105,7 +105,7 @@ public class DAO {
     public static int updateStudent(JSONObject player) throws SQLException{
      DriverManager.registerDriver(new ClientDriver());
        Connection con=DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
-       PreparedStatement stmt=con.prepareStatement("UPDATE players SET username = ?, email = ?, password = ?,status=? WHERE User_name = ?" ,
+       PreparedStatement stmt=con.prepareStatement("UPDATE players SET username = ?, email = ?, password = ?,status=? WHERE username = ?" ,
              ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         
            stmt.setString(1, player.get("username").toString()); 
@@ -118,6 +118,32 @@ public class DAO {
              con.close();
             return rs;
        
+    }
+        public static int updateStatus(JSONObject player) throws SQLException{
+            DriverManager.registerDriver(new ClientDriver());
+            Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            PreparedStatement stmt = con.prepareStatement("UPDATE players SET status=? WHERE username = ?",
+                    ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            stmt.setString(1, player.get("status").toString());
+            stmt.setString(2, player.get("username").toString());
+            int rs = stmt.executeUpdate();
+            stmt.close();
+            con.close();
+            return rs;
+
+    }
+          public static int updateStatus(String name,String status) throws SQLException{
+            DriverManager.registerDriver(new ClientDriver());
+            Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            PreparedStatement stmt = con.prepareStatement("UPDATE players SET status=? WHERE User_name = ?",
+                    ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            stmt.setString(1, status);
+            stmt.setString(2, name);
+            int rs = stmt.executeUpdate();
+            stmt.close();
+            con.close();
+            return rs;
+
     }
    public static JSONObject selectIndexPlayer(JSONObject player) throws SQLException {
     String query = "SELECT * FROM Players WHERE username = ?";
@@ -182,6 +208,32 @@ public class DAO {
     }
 
     return result;
+    
+}
+   public static int getScore(String username) throws SQLException {
+    int score = 0;
+    String query = "SELECT score FROM players WHERE username = ?";
+    try (Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+         PreparedStatement stmt = con.prepareStatement(query)) {
+        stmt.setString(1, username);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            score = rs.getInt("score");
+        }
+    }
+    return score;
+}
+
+   public static int updateScore(String username, int newScore) throws SQLException {
+    int res = 0;
+    String query = "UPDATE players SET score = ? WHERE username = ?";
+    try (Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+         PreparedStatement stmt = con.prepareStatement(query)) {
+        stmt.setInt(1, newScore);
+        stmt.setString(2, username);
+        res = stmt.executeUpdate();
+    }
+    return res;
 }
     
 

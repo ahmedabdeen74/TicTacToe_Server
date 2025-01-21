@@ -42,7 +42,8 @@ public class ClientHandler extends Thread{
     private JSONObject jsonMsg;
     public static Vector<ClientHandler> clients = new Vector<ClientHandler>();
     public DTOPlayer playerData;
-    static List<String> onlinePlayers = new ArrayList<>();
+    public  static List<String> onlinePlayers = new ArrayList<>();
+   // static List<String> gamers = GameManager.gamePlayers;
     
     static Map<String, ClientHandler> onlinePlayerSocs = new HashMap<>();
     
@@ -105,66 +106,81 @@ public class ClientHandler extends Thread{
                  System.out.println("Regsitration-----------");
                    int res = DAO.createPlayer(jsonMsg);
                    Map<String, String> result = new HashMap<>();
-                   
+
                    if(res == 1)
                    {
-                        playerData.setUsername(jsonMsg.get("username").toString()); 
-                        playerData.setEmail(jsonMsg.get("email").toString()); 
-                        onlinePlayerSocs.put(playerData.getUsername(), this);
-                        System.out.println("Hello----------- " +  playerData.getUsername() + " Resgistered successfully");
+                       playerData.setUsername(jsonMsg.get("username").toString());
+                       playerData.setEmail(jsonMsg.get("email").toString());
+                       playerData.setStatus(jsonMsg.get("status").toString());
+                       int upRes = DAO.updateStatus(jsonMsg);
+                       if (upRes == 1) {
+                           System.out.println("Status updateded");
+                       }
 
-                        result.put("type", "register");
-                        result.put("status", ""+res);
-                        onlinePlayers.add(playerData.getUsername());
-                        controlerUI.addOnlinePlayer(playerData.getUsername());
-                   }
-                   else 
-                   {
-                        System.out.println("Hello-----------" +  jsonMsg.get("username").toString() + "Resgistered failed");
-                        result.put("type", "register");
-                        result.put("status", ""+res);     
-                   }
-                   sendJSONResponse(result);
-                   broadcastOnlineList();
-                } catch (SQLException ex) {
-                    Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                       onlinePlayerSocs.put(playerData.getUsername(), this);
+                       System.out.println("Hello----------- " + playerData.getUsername() + " Resgistered successfully");
 
-                break;
+                       // Set default score to 0
+                       playerData.setScore(0);
+
+                       result.put("type", "register");
+                       result.put("status", "" + res);
+                       result.put("score", "0"); // Send default score to the client
+
+                       onlinePlayers.add(playerData.getUsername());
+                       controlerUI.addOnlinePlayer(playerData.getUsername());
+                   }else {
+                    System.out.println("Hello-----------" + jsonMsg.get("username").toString() + " Resgistered failed");
+                    result.put("type", "register");
+                    result.put("status", "" + res);
+                    }
+                     sendJSONResponse(result);
+                     broadcastOnlineList();
+                  } catch (SQLException ex) {
+                 Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                  break;
             case "login":
-                try {
-                    System.out.println("Login-----------");
-                    int res = DAO.validatePlayer(jsonMsg);
-                    Map<String, String> result = new HashMap<>();
+            try {
+             System.out.println("Login-----------");
+             int res = DAO.validatePlayer(jsonMsg);
+             Map<String, String> result = new HashMap<>();
 
-                    if(res == 1)
-                    {
-                        playerData.setUsername(jsonMsg.get("username").toString()); 
-                        onlinePlayerSocs.put(playerData.getUsername(), this);
-                        System.out.println("Hello-----------" +  playerData.getUsername() + " Login successfully");
+            if(res == 1)
+            {
+                playerData.setUsername(jsonMsg.get("username").toString());
+                playerData.setStatus(jsonMsg.get("status").toString());
+                int upRes=DAO.updateStatus(jsonMsg);
+                if(upRes==1){System.out.println("Status updateded");}
+                onlinePlayerSocs.put(playerData.getUsername(), this);
+                System.out.println("Hello-----------" +  playerData.getUsername() + " Login successfully");
+   
 
-                        result.put("type", "login");
-                        result.put("status", ""+res); 
-                        
-                        onlinePlayers.add(playerData.getUsername());
-                        controlerUI.addOnlinePlayer(playerData.getUsername());
-                        
 
+                // Get the player's current score
+                int score = DAO.getScore(playerData.getUsername());
+                playerData.setScore(score);
+
+
+                result.put("type", "login");
+                result.put("status", "" + res);
+                result.put("score", "" + score); // Send the score to the client
+
+                onlinePlayers.add(playerData.getUsername());
+                controlerUI.addOnlinePlayer(playerData.getUsername());
+                }else{
+                    System.out.println("Hello-----------" + jsonMsg.get("username").toString() + " Login failed");
+                    result.put("type", "login");
+                    result.put("status", "" + res);
                     }
-                    else 
-                    {
-                        System.out.println("Hello-----------" +  jsonMsg.get("username").toString() + " Login failed");
-                        result.put("type", "login");
-                        result.put("status", ""+res);     
-                    }
-                    sendJSONResponse(result);
-                    broadcastOnlineList();
 
-                } catch (SQLException ex) {
-                    Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-                }                   
-                    break;
-               
+                sendJSONResponse(result);
+                broadcastOnlineList();
+                }catch(SQLException ex) {
+                Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                break;
+
             case "sendGameReq":
                 String challenged = jsonMsg.get("challenged").toString();
                 String challenger = jsonMsg.get("challenger").toString();
@@ -197,7 +213,23 @@ public class ClientHandler extends Thread{
                     
                
                     if (status.equals("accepted")) {
-                        GameManager.startNewGame(challengerHandler, challengedHandler);
+                       
+                            GameManager.startNewGame(challengerHandler, challengedHandler,controlerUI);
+                            broadcastOnlineList();
+                           /* for(String player:onlinePlayers)
+                            {
+                                if(player.equals(challenger1)||player.equals(challenged1))
+                                {
+                                    onlinePlayers.remove(player);
+                                }
+                            }*/
+                          //  gamePlayers.add(challenged1);
+                          //  gamePlayers.add(challenger1);
+                          //  controlerUI.addInGamePlayer(challenged1);
+                        //  controlerUI.addInGamePlayer(challenger1);
+
+
+                        
                     }
 
                     challengerHandler.sendJSONResponse(notification);
@@ -208,13 +240,20 @@ public class ClientHandler extends Thread{
                 System.out.println(jsonMsg.get("symbol"));
                 GameManager.handleMove(this, jsonMsg);
                 break;
+            case "logout":
+                System.out.println(jsonMsg.get("username")+"logout");
+                onlinePlayers.remove(jsonMsg.get("username").toString());
+                controlerUI.removeOnlinePlayer(jsonMsg.get("username").toString());
+                broadcastOnlineList();
                 
+                break;   
             default:
                 System.out.println("Unhandled message type: " + jsonMsg.get("type").toString());
 
             }
+            
        
-       }
+    }
     
     public void sendJSONResponse(Map<String, String> fields) {
         JSONObject data = new JSONObject();
@@ -226,12 +265,19 @@ public class ClientHandler extends Thread{
         this.ps.println(data);
     }
     
-    public static void broadcastOnlineList() {
-        synchronized(clients) {
+  public static void broadcastOnlineList() {
+    synchronized (clients) {
+        synchronized (onlinePlayers) {
+            // Remove players who are also in gamers
+            onlinePlayers.removeIf(GameManager.gamePlayers::contains);
+
+            // Construct the message
             JSONObject message = new JSONObject();
             message.put("type", "onlinePlayers");
-            message.put("players", new ArrayList<>(onlinePlayers)); 
+            message.put("players", new ArrayList<>(onlinePlayers));
+
             System.out.println("broadcastOnlineList " + onlinePlayers);
+
             // Create a copy of clients to avoid concurrent modification
             List<ClientHandler> clientsCopy = new ArrayList<>(clients);
             for (ClientHandler client : clientsCopy) {
@@ -243,7 +289,8 @@ public class ClientHandler extends Thread{
             }
         }
     }
-    
+}
+
     
     private void cleanup() {
         try {
