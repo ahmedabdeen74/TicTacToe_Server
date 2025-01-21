@@ -12,6 +12,8 @@ import java.util.Map;
 import org.json.simple.JSONObject;
 import tictactoeserver.ClientHandler;
 import db.DAO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import tictactoeserver.ServerUIController;
 
 
@@ -221,78 +223,74 @@ public class GameManager {
 
     if (winner != null || isBoardFull(session.board)) {
         try {
-            if (winner != null) {
-                String winnerName;
-                ClientHandler winnerHandler;
-
-                if (winner.equals("X")) {
-                    winnerName = session.player1.playerData.getUsername();
-                    winnerHandler = session.player1;
-                } else {
-                    winnerName = session.player2.playerData.getUsername();
-                    winnerHandler = session.player2;
-                }
-
-                // Update the winner's score
-                int currentScore = DAO.getScore(winnerName);
-                int newScore = currentScore + 1; // Increment score by 1
-                DAO.updateScore(winnerName, newScore);
-
-                JSONObject p1Msg = new JSONObject();
-                p1Msg.put("type", "gameEnd");
-
-                JSONObject p2Msg = new JSONObject();
-                p2Msg.put("type", "gameEnd");
-
-                if (winner.equals("X")) {
-                    // Player 1 wins
-                    p1Msg.put("result", "win");
-                    p1Msg.put("winner", winnerName);
-                    p1Msg.put("score", newScore); // Send updated score
-
-                    // Player 2 loses
-                    p2Msg.put("result", "lose");
-                    p2Msg.put("winner", winnerName);
-                } else {
-                    // Player 2 wins
-                    p1Msg.put("result", "lose");
-                    p1Msg.put("winner", winnerName);
-
-                    // Player 1 loses
-                    p2Msg.put("result", "win");
-                    p2Msg.put("winner", winnerName);
-                    p2Msg.put("score", newScore); // Send updated score
-                }
-
-
-                // Send messages to both players
-                session.player1.sendMessage(p1Msg.toJSONString());
-                session.player2.sendMessage(p2Msg.toJSONString());
-            } else {
-                // It's a draw
-                System.out.println("Game is a draw");
-                JSONObject drawMsg = new JSONObject();
-                drawMsg.put("type", "gameEnd");
-                drawMsg.put("result", "draw");
-
-                // Send draw message to both players
-                session.player1.sendMessage(drawMsg.toJSONString());
-                session.player2.sendMessage(drawMsg.toJSONString());
-                gamePlayers.remove(session.player1.playerData.getUsername());
-                gamePlayers.remove(session.player2.playerData.getUsername());
-                controlerUI.removeInGamePlayer(session.player1.playerData.getUsername());
-                controlerUI.removeInGamePlayer(session.player2.playerData.getUsername());
-                ClientHandler.onlinePlayers.add(session.player1.playerData.getUsername());
-                ClientHandler.onlinePlayers.add(session.player2.playerData.getUsername());
- 
-                // Broadcast updated online list
-                new Thread(() -> {
-             
-                    synchronized(ClientHandler.clients) {
-                        ClientHandler.broadcastOnlineList();
+            try {
+                if (winner != null) {
+                    String winnerName;
+                    ClientHandler winnerHandler;
+                    
+                    if (winner.equals("X")) {
+                        winnerName = session.player1.playerData.getUsername();
+                        winnerHandler = session.player1;
+                    } else {
+                        winnerName = session.player2.playerData.getUsername();
+                        winnerHandler = session.player2;
                     }
-                }).start();
-
+                    
+                    // Update the winner's score
+                    int currentScore = DAO.getScore(winnerName);
+                    int newScore = currentScore + 1; // Increment score by 1
+                    DAO.updateScore(winnerName, newScore);
+                    
+                    JSONObject p1Msg = new JSONObject();
+                    p1Msg.put("type", "gameEnd");
+                    
+                    JSONObject p2Msg = new JSONObject();
+                    p2Msg.put("type", "gameEnd");
+                    
+                    if (winner.equals("X")) {
+                        // Player 1 wins
+                        p1Msg.put("result", "win");
+                        p1Msg.put("winner", winnerName);
+                        p1Msg.put("score", newScore); // Send updated score
+                        
+                        // Player 2 loses
+                        p2Msg.put("result", "lose");
+                        p2Msg.put("winner", winnerName);
+                    } else {
+                        // Player 2 wins
+                        p1Msg.put("result", "lose");
+                        p1Msg.put("winner", winnerName);
+                        
+                        // Player 1 loses
+                        p2Msg.put("result", "win");
+                        p2Msg.put("winner", winnerName);
+                        p2Msg.put("score", newScore); // Send updated score
+                    }
+                    
+                    
+                    // Send messages to both players
+                    session.player1.sendMessage(p1Msg.toJSONString());
+                    session.player2.sendMessage(p2Msg.toJSONString());
+                } else {
+                    // It's a draw
+                    System.out.println("Game is a draw");
+                    JSONObject drawMsg = new JSONObject();
+                    drawMsg.put("type", "gameEnd");
+                    drawMsg.put("result", "draw");
+                    
+                    // Send draw message to both players
+                    session.player1.sendMessage(drawMsg.toJSONString());
+                    session.player2.sendMessage(drawMsg.toJSONString());
+                 
+                    
+                    // Broadcast updated online list
+                    new Thread(() -> {
+                        
+                        synchronized(ClientHandler.clients) {
+                            ClientHandler.broadcastOnlineList();
+                        }
+                    }).start();
+                }
             } catch (Exception e) {
                 System.out.println("Error during game end: " + e.getMessage());
                 e.printStackTrace();
@@ -308,18 +306,26 @@ public class GameManager {
                 activeSessions.remove(sessionId);
                 System.out.println("Game session removed: " + sessionId);
             }
-
+            gamePlayers.remove(session.player1.playerData.getUsername());
+            gamePlayers.remove(session.player2.playerData.getUsername());
+            controlerUI.removeInGamePlayer(session.player1.playerData.getUsername());
+            controlerUI.removeInGamePlayer(session.player2.playerData.getUsername());
+            ClientHandler.onlinePlayers.add(session.player1.playerData.getUsername());
+            ClientHandler.onlinePlayers.add(session.player2.playerData.getUsername());
             // Broadcast updated online list
             new Thread(() -> {
                 synchronized (ClientHandler.clients) {
                     ClientHandler.broadcastOnlineList();
                 }
             }).start();
+            
+        } catch (InterruptedException ex) {
+                Logger.getLogger(GameManager.class.getName()).log(Level.SEVERE, null, ex);
 
-        } catch (Exception e) {
-            System.out.println("Error during game end: " + e.getMessage());
-            e.printStackTrace();
-        }
+            }
+
+        
     }
 }
 }
+
