@@ -76,7 +76,17 @@ public class ServerUIController implements Initializable {
         }
     }
 
-   
+    @FXML
+    private void showPieChartButtonClicked(ActionEvent event) {
+        // Launch the Piechart application
+        Platform.runLater(() -> {
+            Piechart piechart = new Piechart();
+            piechart.start(new Stage());
+            for (String player : playerData) {
+                piechart.addOnlinePlayer(player);
+            }
+        });
+    }
 
     public void addOnlinePlayer(String username) {
         Platform.runLater(() -> {
