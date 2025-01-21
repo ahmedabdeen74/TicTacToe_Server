@@ -78,7 +78,7 @@ public class ServerUIController implements Initializable {
             }
         }); 
 
-
+    }
 
     @FXML
     private void startButtonClicked(ActionEvent event) {
@@ -103,12 +103,14 @@ public class ServerUIController implements Initializable {
 
     @FXML
     private void showPieChartButtonClicked(ActionEvent event) {
-        // Launch the Piechart application
         Platform.runLater(() -> {
             Piechart piechart = new Piechart();
             piechart.start(new Stage());
             for (String player : playerData) {
                 piechart.addOnlinePlayer(player);
+            }
+            for (String gamer : gamerData) {
+                piechart.addIngamePlayer(gamer);
             }
         });
     }
@@ -136,7 +138,7 @@ public class ServerUIController implements Initializable {
         });
     }
     
-    public void setStage(Stage stage) {
+    
 
 
     public void setStage(Stage stage) {
@@ -154,4 +156,6 @@ public class ServerUIController implements Initializable {
             }
         });
     }
+
+   
 }

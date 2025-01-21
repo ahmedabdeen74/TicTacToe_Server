@@ -14,19 +14,20 @@ import javafx.stage.Stage;
 public class Piechart extends Application {
 
     private ObservableList<PieChart.Data> pieChartData;
-    private ObservableSet<String> playerData;
+    private ObservableSet<String> onlinePlayerData;
+    private ObservableSet<String> ingamePlayerData;
     private int onlineUsers;
     private int offlineUsers;
+    private int ingameUsers;
 
     @Override
     public void start(Stage stage) {
-        playerData = FXCollections.observableSet();
-        onlineUsers = 0;
-        offlineUsers = 5; // Example value, should be dynamically updated
-
+        onlinePlayerData = FXCollections.observableSet();
+        ingamePlayerData = FXCollections.observableSet();
         pieChartData = FXCollections.observableArrayList(
             new PieChart.Data("Online Users", onlineUsers),
-            new PieChart.Data("Offline Users", offlineUsers)
+            new PieChart.Data("Offline Users", offlineUsers),
+            new PieChart.Data("In-Game Users", ingameUsers)
         );
 
         PieChart pieChart = new PieChart(pieChartData);
@@ -43,36 +44,50 @@ public class Piechart extends Application {
     }
 
     private void setupDataListeners() {
-        playerData.addListener((SetChangeListener.Change<? extends String> c) -> {
-            if (c.wasAdded()) {
-                updateUserCounts(playerData.size(), offlineUsers);
-            } else if (c.wasRemoved()) {
-                updateUserCounts(playerData.size(), offlineUsers);
-            }
+        onlinePlayerData.addListener((SetChangeListener.Change<? extends String> c) -> {
+            updateUserCounts(onlinePlayerData.size(), offlineUsers, ingameUsers);
+        });
+
+        ingamePlayerData.addListener((SetChangeListener.Change<? extends String> c) -> {
+            updateUserCounts(onlineUsers, offlineUsers, ingamePlayerData.size());
         });
     }
 
-    private void updateUserCounts(int newOnlineUsers, int newOfflineUsers) {
+    private void updateUserCounts(int newOnlineUsers, int newOfflineUsers, int newIngameUsers) {
         onlineUsers = newOnlineUsers;
         offlineUsers = newOfflineUsers;
+        ingameUsers = newIngameUsers;
 
         Platform.runLater(() -> {
             pieChartData.get(0).setPieValue(onlineUsers);
             pieChartData.get(1).setPieValue(offlineUsers);
+            pieChartData.get(2).setPieValue(ingameUsers);
         });
     }
 
     public void addOnlinePlayer(String username) {
         Platform.runLater(() -> {
-            playerData.add(username);
+            onlinePlayerData.add(username);
             offlineUsers--; // Decrease offline count when a player goes online
         });
     }
 
     public void removeOnlinePlayer(String username) {
         Platform.runLater(() -> {
-            playerData.remove(username);
+            onlinePlayerData.remove(username);
             offlineUsers++; // Increase offline count when a player goes offline
+        });
+    }
+
+    public void addIngamePlayer(String username) {
+        Platform.runLater(() -> {
+            ingamePlayerData.add(username);
+        });
+    }
+
+    public void removeIngamePlayer(String username) {
+        Platform.runLater(() -> {
+            ingamePlayerData.remove(username);
         });
     }
 
