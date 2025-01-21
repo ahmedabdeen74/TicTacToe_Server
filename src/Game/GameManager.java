@@ -238,7 +238,7 @@ public class GameManager {
                     
                     // Update the winner's score
                     int currentScore = DAO.getScore(winnerName);
-                    int newScore = currentScore + 1; // Increment score by 1
+                    int newScore = currentScore + 10; // Increment score by 1
                     DAO.updateScore(winnerName, newScore);
                     
                     JSONObject p1Msg = new JSONObject();
