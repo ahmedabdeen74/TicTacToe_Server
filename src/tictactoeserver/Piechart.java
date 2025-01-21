@@ -33,8 +33,20 @@ public class Piechart extends Application {
         stage.show();
 
         // Simulate data update
-       // simulateDataUpdate();
+        //simulateDataUpdate();
     }
+     
+
+    private void updateUserCounts(int newOnlineUsers, int newOfflineUsers) {
+        onlineUsers = newOnlineUsers;
+        offlineUsers = newOfflineUsers;
+
+        Platform.runLater(() -> {
+            pieChartData.get(0).setPieValue(onlineUsers);
+            pieChartData.get(1).setPieValue(offlineUsers);
+        });
+    }
+
 
    
     public static void main(String[] args) {
