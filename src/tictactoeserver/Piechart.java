@@ -8,9 +8,6 @@ import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -24,6 +21,9 @@ public class Piechart extends Application {
     @Override
     public void start(Stage stage) {
         playerData = FXCollections.observableSet();
+        onlineUsers = 0;
+        offlineUsers = 5; // Example value, should be dynamically updated
+
         pieChartData = FXCollections.observableArrayList(
             new PieChart.Data("Online Users", onlineUsers),
             new PieChart.Data("Offline Users", offlineUsers)
@@ -44,7 +44,11 @@ public class Piechart extends Application {
 
     private void setupDataListeners() {
         playerData.addListener((SetChangeListener.Change<? extends String> c) -> {
-            updateUserCounts(playerData.size(), 0); // Assuming offline users are 0 for simplicity
+            if (c.wasAdded()) {
+                updateUserCounts(playerData.size(), offlineUsers);
+            } else if (c.wasRemoved()) {
+                updateUserCounts(playerData.size(), offlineUsers);
+            }
         });
     }
 
@@ -61,12 +65,14 @@ public class Piechart extends Application {
     public void addOnlinePlayer(String username) {
         Platform.runLater(() -> {
             playerData.add(username);
+            offlineUsers--; // Decrease offline count when a player goes online
         });
     }
 
     public void removeOnlinePlayer(String username) {
         Platform.runLater(() -> {
             playerData.remove(username);
+            offlineUsers++; // Increase offline count when a player goes offline
         });
     }
 
