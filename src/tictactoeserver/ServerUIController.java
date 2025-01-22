@@ -33,7 +33,6 @@ public class ServerUIController implements Initializable {
     
     private ServerManager serverManager;
 
-    @FXML
     private Label selectedItem;
 
     @FXML
@@ -103,14 +102,12 @@ public class ServerUIController implements Initializable {
 
     @FXML
     private void showPieChartButtonClicked(ActionEvent event) {
+        // Launch the Piechart application
         Platform.runLater(() -> {
             Piechart piechart = new Piechart();
             piechart.start(new Stage());
             for (String player : playerData) {
                 piechart.addOnlinePlayer(player);
-            }
-            for (String gamer : gamerData) {
-                piechart.addIngamePlayer(gamer);
             }
         });
     }
