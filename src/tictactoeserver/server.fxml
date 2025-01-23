@@ -35,17 +35,17 @@
                   <Font name="System Bold Italic" size="19.0" />
                </font>
             </Label>
-            <Label layoutX="91.0" layoutY="449.0" text="SERVER MOOD" textFill="#fff600">
+            <Label layoutX="91.0" layoutY="449.0" text="SERVER MODE" textFill="#fff600">
                <font>
                   <Font name="System Bold Italic" size="19.0" />
                </font>
             </Label>
-            <Button fx:id="startBtn" layoutX="248.0" layoutY="451.0" mnemonicParsing="false" onAction="#startButtonClicked" style="-fx-background-color: YELLOW; -fx-background-radius: 10;" text="START">
+            <Button fx:id="startBtn" layoutX="247.0" layoutY="449.0" mnemonicParsing="false" onAction="#startButtonClicked" prefHeight="27.0" prefWidth="59.0" style="-fx-background-color: YELLOW; -fx-background-radius: 10;" text="START">
                <font>
-                  <Font name="System Bold" size="12.0" />
+                  <Font name="System Bold" size="13.0" />
                </font>
             </Button>
-            <Button fx:id="stopBtn" layoutX="323.0" layoutY="451.0" mnemonicParsing="false" onAction="#stopButtonClicked" prefHeight="25.0" prefWidth="54.0" style="-fx-background-color: YELLOW; -fx-background-radius: 10;" text="STOP">
+            <Button fx:id="stopBtn" layoutX="323.0" layoutY="449.0" mnemonicParsing="false" onAction="#stopButtonClicked" prefHeight="29.0" prefWidth="59.0" style="-fx-background-color: YELLOW; -fx-background-radius: 10;" text="STOP">
                <font>
                   <Font name="System Bold" size="13.0" />
                </font>

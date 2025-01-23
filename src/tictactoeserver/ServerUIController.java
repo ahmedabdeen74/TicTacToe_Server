@@ -16,67 +16,58 @@ import javafx.stage.Stage;
 
 public class ServerUIController implements Initializable {
 
-    private Label label;
     @FXML
     private Button startBtn;
     @FXML
     private Button stopBtn;
     @FXML
-    private Button showPieChartBtn; // New button for showing the pie chart
+    private Button showPieChartBtn; // Button for showing the pie chart
     @FXML
     private ListView<String> onlinePlayersList;
-    private ObservableSet<String> playerData;
-
-    private Stage stage;
-    
-    String selectedPlayer = "";
-    
-    private ServerManager serverManager;
-
-    private Label selectedItem;
-
     @FXML
     private ListView<String> ingamePlayersList;
-     private ObservableSet<String> gamerData;
-    
-    
+    @FXML
+    private Label selectedItem; // Label to display selected player
+
+    private ObservableSet<String> playerData;
+    private ObservableSet<String> gamerData;
+    private Stage stage;
+    private ServerManager serverManager;
+    private String selectedPlayer = "";
+
+    private static final int TOTAL_EXPECTED_USERS = 100; // Define total expected users for pie chart
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         playerData = FXCollections.observableSet();
+        gamerData = FXCollections.observableSet();
 
-        onlinePlayersList.getSelectionModel().selectedItemProperty().addListener((observable) -> {
-            selectedPlayer = onlinePlayersList.getSelectionModel().getSelectedItem();
-            selectedItem.setText(selectedPlayer);
+        setupListView(onlinePlayersList, playerData);
+        setupListView(ingamePlayersList, gamerData);
+
+        // Disable stop and pie chart buttons initially
+        stopBtn.setDisable(true);
+        showPieChartBtn.setDisable(true);
+    }
+
+    private void setupListView(ListView<String> listView, ObservableSet<String> dataSet) {
+        listView.getSelectionModel().selectedItemProperty().addListener((observable) -> {
+            selectedPlayer = listView.getSelectionModel().getSelectedItem();
+            if (selectedItem != null) {
+                selectedItem.setText(selectedPlayer != null ? selectedPlayer : "");
+            }
         });
 
-        playerData.addListener((SetChangeListener.Change<? extends String> c) -> {
-            if (c.wasAdded()) {
-                onlinePlayersList.getItems().add(c.getElementAdded());
-            }
-            if (c.wasRemoved()) {
-                onlinePlayersList.getItems().remove(c.getElementRemoved());
-            }
-
-        }); 
-        
-         gamerData = FXCollections.observableSet();
-
-        ingamePlayersList.getSelectionModel().selectedItemProperty().addListener((observable) -> {
-            selectedPlayer = ingamePlayersList.getSelectionModel().getSelectedItem();
-            selectedItem.setText(selectedPlayer);
+        dataSet.addListener((SetChangeListener.Change<? extends String> c) -> {
+            Platform.runLater(() -> {
+                if (c.wasAdded()) {
+                    listView.getItems().add(c.getElementAdded());
+                }
+                if (c.wasRemoved()) {
+                    listView.getItems().remove(c.getElementRemoved());
+                }
+            });
         });
-       
-
-        gamerData.addListener((SetChangeListener.Change<? extends String> c) -> {
-            if (c.wasAdded()) {
-                ingamePlayersList.getItems().add(c.getElementAdded());
-            }
-            if (c.wasRemoved()) {
-                ingamePlayersList.getItems().remove(c.getElementRemoved());
-            }
-        }); 
-
     }
 
     @FXML
@@ -86,6 +77,7 @@ public class ServerUIController implements Initializable {
             System.out.println("Server started!");
             startBtn.setDisable(true);
             stopBtn.setDisable(false);
+            showPieChartBtn.setDisable(false); // Enable pie chart button when server starts
         }
     }
 
@@ -97,6 +89,7 @@ public class ServerUIController implements Initializable {
             System.out.println("Server stopped!");
             startBtn.setDisable(false);
             stopBtn.setDisable(true);
+            showPieChartBtn.setDisable(true); // Disable pie chart button when server stops
         }
     }
 
@@ -104,43 +97,30 @@ public class ServerUIController implements Initializable {
     private void showPieChartButtonClicked(ActionEvent event) {
         // Launch the Piechart application
         Platform.runLater(() -> {
-            Piechart piechart = new Piechart();
+            Piechart piechart = new Piechart(playerData, gamerData, TOTAL_EXPECTED_USERS);
             piechart.start(new Stage());
-            for (String player : playerData) {
-                piechart.addOnlinePlayer(player);
-            }
         });
     }
 
     public void addOnlinePlayer(String username) {
-        Platform.runLater(() -> {
-            playerData.add(username);
-        });
+        Platform.runLater(() -> playerData.add(username));
     }
 
     public void removeOnlinePlayer(String username) {
-        Platform.runLater(() -> {
-            playerData.remove(username);
-        });
+        Platform.runLater(() -> playerData.remove(username));
     }
 
-      public void addInGamePlayer(String username) {
-        Platform.runLater(() -> {
-            gamerData.add(username);
-        });
+    public void addInGamePlayer(String username) {
+        Platform.runLater(() -> gamerData.add(username));
     }
+
     public void removeInGamePlayer(String username) {
-        Platform.runLater(() -> {
-            gamerData.remove(username);
-        });
+        Platform.runLater(() -> gamerData.remove(username));
     }
-    
-    
-
 
     public void setStage(Stage stage) {
         this.stage = stage;
-        
+
         stage.setOnCloseRequest(event -> {
             try {
                 if (serverManager != null) {
@@ -153,6 +133,4 @@ public class ServerUIController implements Initializable {
             }
         });
     }
-
-   
 }

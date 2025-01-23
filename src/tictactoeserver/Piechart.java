@@ -2,96 +2,97 @@ package tictactoeserver;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class Piechart extends Application {
 
-    private ObservableList<PieChart.Data> pieChartData;
-    private ObservableSet<String> onlinePlayerData;
-    private ObservableSet<String> ingamePlayerData;
-    private int onlineUsers;
-    private int offlineUsers;
-    private int ingameUsers;
+    private final ObservableSet<String> onlinePlayerData;
+    private final ObservableSet<String> ingamePlayerData;
+    private final int totalExpectedUsers;
+    private PieChart pieChart;
+
+    public Piechart(ObservableSet<String> onlinePlayerData, ObservableSet<String> ingamePlayerData, int totalExpectedUsers) {
+        this.onlinePlayerData = onlinePlayerData;
+        this.ingamePlayerData = ingamePlayerData;
+        this.totalExpectedUsers = totalExpectedUsers;
+    }
 
     @Override
     public void start(Stage stage) {
-        onlinePlayerData = FXCollections.observableSet();
-        ingamePlayerData = FXCollections.observableSet();
-        pieChartData = FXCollections.observableArrayList(
-            new PieChart.Data("Online Users", onlineUsers),
-            new PieChart.Data("Offline Users", offlineUsers),
-            new PieChart.Data("In-Game Users", ingameUsers)
-        );
-
-        PieChart pieChart = new PieChart(pieChartData);
+        pieChart = new PieChart();
         pieChart.setTitle("User Status Distribution");
+
+        updatePieChart(); // Set up the initial chart
+        setupDataListeners(); // Dynamically update chart as data changes
 
         StackPane root = new StackPane(pieChart);
         Scene scene = new Scene(root, 400, 300);
 
-        stage.setTitle("Tic Tac Toe Server");
+        stage.setTitle("Tic Tac Toe Server - User Status");
         stage.setScene(scene);
         stage.show();
-
-        setupDataListeners();
     }
 
     private void setupDataListeners() {
-        onlinePlayerData.addListener((SetChangeListener.Change<? extends String> c) -> {
-            updateUserCounts(onlinePlayerData.size(), offlineUsers, ingameUsers);
-        });
-
-        ingamePlayerData.addListener((SetChangeListener.Change<? extends String> c) -> {
-            updateUserCounts(onlineUsers, offlineUsers, ingamePlayerData.size());
-        });
+        // Update the pie chart whenever player data changes
+        onlinePlayerData.addListener((SetChangeListener.Change<? extends String> change) -> updatePieChart());
+        ingamePlayerData.addListener((SetChangeListener.Change<? extends String> change) -> updatePieChart());
     }
 
-    private void updateUserCounts(int newOnlineUsers, int newOfflineUsers, int newIngameUsers) {
-        onlineUsers = newOnlineUsers;
-        offlineUsers = newOfflineUsers;
-        ingameUsers = newIngameUsers;
+    private void updatePieChart() {
+        // Calculate user counts
+        int onlineUsers = onlinePlayerData.size();
+        int ingameUsers = ingamePlayerData.size();
+        int offlineUsers = Math.max(totalExpectedUsers - onlineUsers - ingameUsers, 0);
 
+        // Update the chart on the JavaFX Application thread
         Platform.runLater(() -> {
-            pieChartData.get(0).setPieValue(onlineUsers);
-            pieChartData.get(1).setPieValue(offlineUsers);
-            pieChartData.get(2).setPieValue(ingameUsers);
+            pieChart.getData().clear();
+            PieChart.Data onlineData = new PieChart.Data("Online Users", onlineUsers);
+            PieChart.Data ingameData = new PieChart.Data("In-Game Users", ingameUsers);
+            PieChart.Data offlineData = new PieChart.Data("Offline Users", offlineUsers);
+
+            // Add tooltips for better interactivity
+            addTooltip(onlineData, "Online Users: " + onlineUsers);
+            addTooltip(ingameData, "In-Game Users: " + ingameUsers);
+            addTooltip(offlineData, "Offline Users: " + offlineUsers);
+
+            pieChart.getData().addAll(onlineData, ingameData, offlineData);
         });
     }
 
-    public void addOnlinePlayer(String username) {
-        Platform.runLater(() -> {
-            onlinePlayerData.add(username);
-            offlineUsers--; // Decrease offline count when a player goes online
-        });
+    private void addTooltip(PieChart.Data data, String tooltipText) {
+        Tooltip tooltip = new Tooltip(tooltipText);
+        Tooltip.install(data.getNode(), tooltip);
     }
 
-    public void removeOnlinePlayer(String username) {
-        Platform.runLater(() -> {
-            onlinePlayerData.remove(username);
-            offlineUsers++; // Increase offline count when a player goes offline
-        });
+    public void addOnlinePlayer(String player) {
+        if (player != null && !player.isEmpty()) {
+            Platform.runLater(() -> onlinePlayerData.add(player));
+        }
     }
 
-    public void addIngamePlayer(String username) {
-        Platform.runLater(() -> {
-            ingamePlayerData.add(username);
-        });
+    public void removeOnlinePlayer(String player) {
+        if (player != null && !player.isEmpty()) {
+            Platform.runLater(() -> onlinePlayerData.remove(player));
+        }
     }
 
-    public void removeIngamePlayer(String username) {
-        Platform.runLater(() -> {
-            ingamePlayerData.remove(username);
-        });
+    public void addIngamePlayer(String player) {
+        if (player != null && !player.isEmpty()) {
+            Platform.runLater(() -> ingamePlayerData.add(player));
+        }
     }
 
-    public static void main(String[] args) {
-        launch(args);
+    public void removeIngamePlayer(String player) {
+        if (player != null && !player.isEmpty()) {
+            Platform.runLater(() -> ingamePlayerData.remove(player));
+        }
     }
 }
