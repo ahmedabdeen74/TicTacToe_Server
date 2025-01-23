@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tictactoeserver;
 
 import java.net.URL;
@@ -18,139 +13,124 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
-import org.json.simple.JSONObject;
 
-/**
- *
- * @author Mohamed Sameh
- */
 public class ServerUIController implements Initializable {
-    
-    private Label label;
+
     @FXML
     private Button startBtn;
     @FXML
     private Button stopBtn;
     @FXML
-    private ListView<String> onlinePlayersList;
-    private ObservableSet<String> playerData;
-
-    private Stage stage;
-    
-    String selectedPlayer = "";
-    
-    private ServerManager serverManager;
-
+    private Button showPieChartBtn; // Button for showing the pie chart
     @FXML
-    private Label selectedItem;
+    private ListView<String> onlinePlayersList;
     @FXML
     private ListView<String> ingamePlayersList;
-     private ObservableSet<String> gamerData;
-    
-    
+    @FXML
+    private Label selectedItem; // Label to display selected player
+
+    private ObservableSet<String> playerData;
+    private ObservableSet<String> gamerData;
+    private Stage stage;
+    private ServerManager serverManager;
+    private String selectedPlayer = "";
+
+    private static final int TOTAL_EXPECTED_USERS = 100; // Define total expected users for pie chart
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
-        // Initialize the ObservableList and bind it to the ListView
-        
-        System.out.println("ServerUIController");
         playerData = FXCollections.observableSet();
+        gamerData = FXCollections.observableSet();
 
-        onlinePlayersList.getSelectionModel().selectedItemProperty().addListener((observable) -> {
-            selectedPlayer = onlinePlayersList.getSelectionModel().getSelectedItem();
-            selectedItem.setText(selectedPlayer);
+        setupListView(onlinePlayersList, playerData);
+        setupListView(ingamePlayersList, gamerData);
+
+        // Disable stop and pie chart buttons initially
+        stopBtn.setDisable(true);
+        showPieChartBtn.setDisable(true);
+    }
+
+    private void setupListView(ListView<String> listView, ObservableSet<String> dataSet) {
+        listView.getSelectionModel().selectedItemProperty().addListener((observable) -> {
+            selectedPlayer = listView.getSelectionModel().getSelectedItem();
+            if (selectedItem != null) {
+                selectedItem.setText(selectedPlayer != null ? selectedPlayer : "");
+            }
         });
-       
 
-        playerData.addListener((SetChangeListener.Change<? extends String> c) -> {
-            if (c.wasAdded()) {
-                onlinePlayersList.getItems().add(c.getElementAdded());
-            }
-            if (c.wasRemoved()) {
-                onlinePlayersList.getItems().remove(c.getElementRemoved());
-            }
-        }); 
-        
-         gamerData = FXCollections.observableSet();
-
-        ingamePlayersList.getSelectionModel().selectedItemProperty().addListener((observable) -> {
-            selectedPlayer = ingamePlayersList.getSelectionModel().getSelectedItem();
-            selectedItem.setText(selectedPlayer);
+        dataSet.addListener((SetChangeListener.Change<? extends String> c) -> {
+            Platform.runLater(() -> {
+                if (c.wasAdded()) {
+                    listView.getItems().add(c.getElementAdded());
+                }
+                if (c.wasRemoved()) {
+                    listView.getItems().remove(c.getElementRemoved());
+                }
+            });
         });
-       
+    }
 
-        gamerData.addListener((SetChangeListener.Change<? extends String> c) -> {
-            if (c.wasAdded()) {
-                ingamePlayersList.getItems().add(c.getElementAdded());
-            }
-            if (c.wasRemoved()) {
-                ingamePlayersList.getItems().remove(c.getElementRemoved());
-            }
-        }); 
-
-
-    }    
-    
     @FXML
     private void startButtonClicked(ActionEvent event) {
-        
         if (serverManager == null) {
-
             serverManager = new ServerManager(this);
             System.out.println("Server started!");
-            startBtn.setDisable(true); // Disable the Start button
-            stopBtn.setDisable(false); // Enable the Stop button
+            startBtn.setDisable(true);
+            stopBtn.setDisable(false);
+            showPieChartBtn.setDisable(false); // Enable pie chart button when server starts
         }
     }
 
     @FXML
     private void stopButtonClicked(ActionEvent event) {
-  
-        serverManager.stopServer();
+        if (serverManager != null) {
+            serverManager.stopServer();
+            serverManager = null;
+            System.out.println("Server stopped!");
+            startBtn.setDisable(false);
+            stopBtn.setDisable(true);
+            showPieChartBtn.setDisable(true); // Disable pie chart button when server stops
+        }
+    }
 
-        serverManager = null;
-        System.out.println("Server stopped!");
-        startBtn.setDisable(false);
-        stopBtn.setDisable(true);
-       
+    @FXML
+    private void showPieChartButtonClicked(ActionEvent event) {
+        // Launch the Piechart application
+        Platform.runLater(() -> {
+            Piechart piechart = new Piechart(playerData, gamerData, TOTAL_EXPECTED_USERS);
+            piechart.start(new Stage());
+        });
     }
 
     public void addOnlinePlayer(String username) {
-        Platform.runLater(() -> {
-            playerData.add(username);
-        });
+        Platform.runLater(() -> playerData.add(username));
     }
-    public void removeOnlinePlayer(String username) {
-        Platform.runLater(() -> {
-            playerData.remove(username);
-        });
-    }
-      public void addInGamePlayer(String username) {
-        Platform.runLater(() -> {
-            gamerData.add(username);
-        });
-    }
-    public void removeInGamePlayer(String username) {
-        Platform.runLater(() -> {
-            gamerData.remove(username);
-        });
-    }
-    
-    public void setStage(Stage stage) {
 
+    public void removeOnlinePlayer(String username) {
+        Platform.runLater(() -> playerData.remove(username));
+    }
+
+    public void addInGamePlayer(String username) {
+        Platform.runLater(() -> gamerData.add(username));
+    }
+
+    public void removeInGamePlayer(String username) {
+        Platform.runLater(() -> gamerData.remove(username));
+    }
+
+    public void setStage(Stage stage) {
         this.stage = stage;
-        
+
         stage.setOnCloseRequest(event -> {
             try {
-                serverManager.stopServer(); // Gracefully stop the server
-                System.out.println("Server stopped.");
-            } catch (Exception e) {
-//                System.err.println("Error stopping the server: " + e.getMessage());
+                if (serverManager != null) {
+                    serverManager.stopServer();
+                    System.out.println("Server stopped.");
+                }
             } finally {
-                Platform.exit(); // Exit JavaFX thread
-                System.exit(0);  // Terminate application
+                Platform.exit();
+                System.exit(0);
             }
         });
     }
-
 }

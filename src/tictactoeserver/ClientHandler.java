@@ -156,9 +156,11 @@ public class ClientHandler extends Thread{
                 System.out.println("Hello-----------" +  playerData.getUsername() + " Login successfully");
    
 
+
                 // Get the player's current score
                 int score = DAO.getScore(playerData.getUsername());
                 playerData.setScore(score);
+
 
                 result.put("type", "login");
                 result.put("status", "" + res);
@@ -171,12 +173,14 @@ public class ClientHandler extends Thread{
                     result.put("type", "login");
                     result.put("status", "" + res);
                     }
+
                 sendJSONResponse(result);
                 broadcastOnlineList();
                 }catch(SQLException ex) {
                 Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 break;
+
             case "sendGameReq":
                 String challenged = jsonMsg.get("challenged").toString();
                 String challenger = jsonMsg.get("challenger").toString();
