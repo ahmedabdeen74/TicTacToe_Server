@@ -216,20 +216,6 @@ public class ClientHandler extends Thread{
                        
                             GameManager.startNewGame(challengerHandler, challengedHandler,controlerUI);
                             broadcastOnlineList();
-                           /* for(String player:onlinePlayers)
-                            {
-                                if(player.equals(challenger1)||player.equals(challenged1))
-                                {
-                                    onlinePlayers.remove(player);
-                                }
-                            }*/
-                          //  gamePlayers.add(challenged1);
-                          //  gamePlayers.add(challenger1);
-                          //  controlerUI.addInGamePlayer(challenged1);
-                        //  controlerUI.addInGamePlayer(challenger1);
-
-
-                        
                     }
 
                     challengerHandler.sendJSONResponse(notification);
@@ -308,7 +294,9 @@ public class ClientHandler extends Thread{
                 Platform.runLater(() -> {
                     controlerUI.removeOnlinePlayer(username);
                 });
-                
+                Platform.runLater(() -> {
+                    controlerUI.removeInGamePlayer(username);
+                });
                 // Broadcast after removal
                 broadcastOnlineList();
             }

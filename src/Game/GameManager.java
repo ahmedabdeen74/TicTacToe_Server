@@ -292,7 +292,6 @@ public class GameManager {
                     
                     // Broadcast updated online list
                     new Thread(() -> {
-                        
                         synchronized(ClientHandler.clients) {
                             ClientHandler.broadcastOnlineList();
                         }

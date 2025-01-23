@@ -115,7 +115,9 @@ public class ServerUIController implements Initializable {
     }
 
     public void removeInGamePlayer(String username) {
-        Platform.runLater(() -> gamerData.remove(username));
+        if(gamerData.contains(username)){
+            Platform.runLater(() -> gamerData.remove(username));
+        }
     }
 
     public void setStage(Stage stage) {
