@@ -220,6 +220,7 @@ public class GameManager {
     private static void checkGameEnd(GameSession session) {
     String winner = checkWinner(session.board);
     System.out.println("Checking game end. Winner: " + winner);
+    int lScore=0;
 
     if (winner != null || isBoardFull(session.board)) {
         try {
@@ -231,9 +232,12 @@ public class GameManager {
                     if (winner.equals("X")) {
                         winnerName = session.player1.playerData.getUsername();
                         winnerHandler = session.player1;
+                        lScore=session.player2.playerData.getScore();
                     } else {
                         winnerName = session.player2.playerData.getUsername();
                         winnerHandler = session.player2;
+                       lScore=session.player1.playerData.getScore();
+
                     }
                     
                     // Update the winner's score
@@ -256,10 +260,12 @@ public class GameManager {
                         // Player 2 loses
                         p2Msg.put("result", "lose");
                         p2Msg.put("winner", winnerName);
+                        p2Msg.put("score", lScore);
                     } else {
                         // Player 2 wins
                         p1Msg.put("result", "lose");
                         p1Msg.put("winner", winnerName);
+                        p1Msg.put("score", lScore);
                         
                         // Player 1 loses
                         p2Msg.put("result", "win");
@@ -277,6 +283,7 @@ public class GameManager {
                     JSONObject drawMsg = new JSONObject();
                     drawMsg.put("type", "gameEnd");
                     drawMsg.put("result", "draw");
+                  
                     
                     // Send draw message to both players
                     session.player1.sendMessage(drawMsg.toJSONString());
