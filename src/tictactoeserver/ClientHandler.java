@@ -237,14 +237,23 @@ public class ClientHandler extends Thread{
                 controlerUI.removeOnlinePlayer(jsonMsg.get("username").toString());
                 broadcastOnlineList();
                 
-                break;   
+                break; 
+                case "serverShutdown": 
+                System.out.println("Server is shutting down. Disconnecting...");
+                // Notify the client that the server is shutting down
+                Map<String, String> shutdownMsg = new HashMap<>();
+                shutdownMsg.put("type", "serverShutdown");
+                shutdownMsg.put("message", "Server is shutting down. Please reconnect later.");
+                sendJSONResponse(shutdownMsg);
+                cleanup(); // Cleanup resources and disconnect
+                break;
             default:
                 System.out.println("Unhandled message type: " + jsonMsg.get("type").toString());
-
-            }
+        }
+    }
+        
             
        
-    }
     
     public void sendJSONResponse(Map<String, String> fields) {
         JSONObject data = new JSONObject();
