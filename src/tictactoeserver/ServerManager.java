@@ -79,6 +79,9 @@ public class ServerManager {
              // Interrupt each client handler thread 
             for(ClientHandler handler : clientHandlers) 
             {
+                JSONObject msg = new JSONObject();
+                msg.put("type", "serverDisconnection");
+                handler.ps.println(msg.toJSONString());
                 handler.stopHandler(); // Make sure to stop each client processing
             }
         } catch (IOException ex) {
