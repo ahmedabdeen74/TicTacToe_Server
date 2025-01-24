@@ -38,6 +38,14 @@
                         <InnerShadow color="#808080" radius="5.0" />
                     </effect>
                 </ListView>
+                <ListView fx:id="onlinePlayersList" layoutX="24.0" layoutY="203.0" prefHeight="200.0" prefWidth="200.0" styleClass="list-view">
+                    <padding>
+                        <Insets bottom="5" left="5" right="5" top="5" />
+                    </padding>
+                    <effect>
+                        <InnerShadow color="#808080" radius="5.0" />
+                    </effect>
+                </ListView>
                 <Label layoutX="47.0" layoutY="162.0" text="ONLINE PLAYERS" textFill="#fff600">
                     <font>
                         <Font name="System Bold Italic" size="19.0" />
