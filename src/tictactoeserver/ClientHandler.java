@@ -111,7 +111,6 @@ public class ClientHandler extends Thread{
                    {
                        playerData.setUsername(jsonMsg.get("username").toString());
                        playerData.setEmail(jsonMsg.get("email").toString());
-                       playerData.setStatus(jsonMsg.get("status").toString());
                        int upRes = DAO.updateStatus(jsonMsg);
                        if (upRes == 1) {
                            System.out.println("Status updateded");
@@ -149,7 +148,6 @@ public class ClientHandler extends Thread{
                if(res == 1)
                {
                    playerData.setUsername(jsonMsg.get("username").toString());
-                   playerData.setStatus(jsonMsg.get("status").toString());
                    int upRes=DAO.updateStatus(jsonMsg);
                    
                    if(upRes==1)

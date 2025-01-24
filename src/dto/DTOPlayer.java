@@ -16,27 +16,23 @@ public class DTOPlayer {
     private String username;
     private String password;
     private String email;
-    private String status; // "available" or "in game"
     private int score;
     private Socket socket;
     
-    public DTOPlayer(String username, String status, int score, Socket socket) {
+    public DTOPlayer(String username, int score, Socket socket) {
         this.username = username;
-        this.status = status;
         this.score = score;
         this.socket = socket;
     }
 
-    public DTOPlayer(int playerId, String username, String status) {
+    public DTOPlayer(int playerId, String username) {
         this.playerId = playerId;
         this.username = username;
-        this.status = status;
     }
      public DTOPlayer() {
         this.username = "";
         this.password="";
         this.email="";
-        this.status = "";
         this.score = 0;
         this.socket = null;
     }
@@ -44,7 +40,6 @@ public class DTOPlayer {
         this.username = username;
         this.password=password;
         this.email=email;
-        this.status = status;
         this.score = score;
         this.socket = socket;
     }
@@ -88,14 +83,6 @@ public class DTOPlayer {
 
     public void setSocket(Socket socket) {
         this.socket = socket;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public int getScore() {
