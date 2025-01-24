@@ -78,6 +78,7 @@ public class GameManager {
         p1Start.put("type", "gameStart");
         p1Start.put("symbol", "X");
         p1Start.put("opponent", player2.playerData.getUsername());
+        p1Start.put("score", player2.playerData.getScore());
         player1.sendMessage(p1Start.toJSONString());
         
         // Notify player2 (O)
@@ -85,6 +86,7 @@ public class GameManager {
         p2Start.put("type", "gameStart");
         p2Start.put("symbol", "O");
         p2Start.put("opponent", player1.playerData.getUsername());
+        p1Start.put("score", player1.playerData.getScore());
         player2.sendMessage(p2Start.toJSONString());
     }
     
