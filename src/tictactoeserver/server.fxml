@@ -8,54 +8,75 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.effect.InnerShadow?>
+<?import java.net.URL?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="554.0" prefWidth="551.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tictactoeserver.ServerUIController">
-   <center>
-      <AnchorPane prefHeight="381.0" prefWidth="600.0" BorderPane.alignment="CENTER">
-         <children>
-            <ImageView fitHeight="554.0" fitWidth="564.0" layoutX="-2.0" layoutY="1.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@../Images/background.jpg" />
-               </image>
-            </ImageView>
-            <ImageView fitHeight="45.0" fitWidth="169.0" layoutX="192.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@../Images/welcome.gif" />
-               </image>
-            </ImageView>
-            <ListView fx:id="ingamePlayersList" layoutX="311.0" layoutY="203.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: BEIGE; -fx-border-radius: 20; -fx-background-radius: 20;" />
-            <ListView fx:id="onlinePlayersList" layoutX="24.0" layoutY="203.0" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: BEIGE; -fx-border-radius: 20; -fx-background-radius: 20;" />
-            <Label layoutX="47.0" layoutY="162.0" text="ONLINE PLAYERS" textFill="#fff600">
-               <font>
-                  <Font name="System Bold Italic" size="19.0" />
-               </font>
-            </Label>
-            <Label layoutX="340.0" layoutY="162.0" text="INGAME PLAYERS" textFill="#fff600">
-               <font>
-                  <Font name="System Bold Italic" size="19.0" />
-               </font>
-            </Label>
-            <Label layoutX="91.0" layoutY="449.0" text="SERVER MODE" textFill="#fff600">
-               <font>
-                  <Font name="System Bold Italic" size="19.0" />
-               </font>
-            </Label>
-            <Button fx:id="startBtn" layoutX="247.0" layoutY="449.0" mnemonicParsing="false" onAction="#startButtonClicked" prefHeight="27.0" prefWidth="59.0" style="-fx-background-color: YELLOW; -fx-background-radius: 10;" text="START">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Button>
-            <Button fx:id="stopBtn" layoutX="323.0" layoutY="449.0" mnemonicParsing="false" onAction="#stopButtonClicked" prefHeight="29.0" prefWidth="59.0" style="-fx-background-color: YELLOW; -fx-background-radius: 10;" text="STOP">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Button>
-            <Button fx:id="showPieChartBtn" layoutX="461.0" layoutY="47.0" mnemonicParsing="false" onAction="#showPieChartButtonClicked" style="-fx-background-color: YELLOW; -fx-background-radius: 10;" text="PIE CHART">
-               <font>
-                  <Font name="System Bold" size="12.0" />
-               </font>
-            </Button>
-         </children>
-      </AnchorPane>
-   </center>
+     <stylesheets>
+        <URL value="@server.css" />
+    </stylesheets>
+
+    <center>
+        <AnchorPane prefHeight="381.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+            <children>
+                <ImageView fitHeight="554.0" fitWidth="564.0" layoutX="-2.0" layoutY="1.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../Images/background.jpg" />
+                    </image>
+                </ImageView>
+                <ImageView fitHeight="45.0" fitWidth="169.0" layoutX="192.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@../Images/welcome.gif" />
+                    </image>
+                </ImageView>
+                <ListView fx:id="ingamePlayersList" layoutX="311.0" layoutY="203.0" prefHeight="200.0" prefWidth="200.0" styleClass="list-view">
+                    <padding>
+                        <Insets bottom="5" left="5" right="5" top="5" />
+                    </padding>
+                    <effect>
+                        <InnerShadow color="#808080" radius="5.0" />
+                    </effect>
+                </ListView>
+                <ListView fx:id="onlinePlayersList" layoutX="24.0" layoutY="203.0" prefHeight="200.0" prefWidth="200.0" styleClass="list-view">
+                    <padding>
+                        <Insets bottom="5" left="5" right="5" top="5" />
+                    </padding>
+                    <effect>
+                        <InnerShadow color="#808080" radius="5.0" />
+                    </effect>
+                </ListView>
+                <Label layoutX="47.0" layoutY="162.0" text="ONLINE PLAYERS" textFill="#fff600">
+                    <font>
+                        <Font name="System Bold Italic" size="19.0" />
+                    </font>
+                </Label>
+                <Label layoutX="340.0" layoutY="162.0" text="INGAME PLAYERS" textFill="#fff600">
+                    <font>
+                        <Font name="System Bold Italic" size="19.0" />
+                    </font>
+                </Label>
+                <Label layoutX="91.0" layoutY="449.0" text="SERVER MODE" textFill="#fff600">
+                    <font>
+                        <Font name="System Bold Italic" size="19.0" />
+                    </font>
+                </Label>
+                <Button fx:id="startBtn" layoutX="247.0" layoutY="449.0" mnemonicParsing="false" onAction="#startButtonClicked" prefHeight="27.0" prefWidth="59.0" style="-fx-background-color: YELLOW; -fx-background-radius: 10;" text="START">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+                <Button fx:id="stopBtn" layoutX="323.0" layoutY="449.0" mnemonicParsing="false" onAction="#stopButtonClicked" prefHeight="29.0" prefWidth="59.0" style="-fx-background-color: YELLOW; -fx-background-radius: 10;" text="STOP">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Button>
+                <Button fx:id="showPieChartBtn" layoutX="461.0" layoutY="47.0" mnemonicParsing="false" onAction="#showPieChartButtonClicked" style="-fx-background-color: YELLOW; -fx-background-radius: 10;" text="PIE CHART">
+                    <font>
+                        <Font name="System Bold" size="12.0" />
+                    </font>
+                </Button>
+            </children>
+        </AnchorPane>
+    </center>
 </BorderPane>
