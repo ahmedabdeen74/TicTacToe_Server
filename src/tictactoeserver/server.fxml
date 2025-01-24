@@ -13,8 +13,7 @@
 <?import java.net.URL?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="554.0" prefWidth="551.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tictactoeserver.ServerUIController">
-    <!-- ربط ملف CSS -->
-    <stylesheets>
+     <stylesheets>
         <URL value="@server.css" />
     </stylesheets>
 
@@ -32,14 +31,6 @@
                     </image>
                 </ImageView>
                 <ListView fx:id="ingamePlayersList" layoutX="311.0" layoutY="203.0" prefHeight="200.0" prefWidth="200.0" styleClass="list-view">
-                    <padding>
-                        <Insets bottom="5" left="5" right="5" top="5" />
-                    </padding>
-                    <effect>
-                        <InnerShadow color="#808080" radius="5.0" />
-                    </effect>
-                </ListView>
-                <ListView fx:id="onlinePlayersList" layoutX="24.0" layoutY="203.0" prefHeight="200.0" prefWidth="200.0" styleClass="list-view">
                     <padding>
                         <Insets bottom="5" left="5" right="5" top="5" />
                     </padding>
