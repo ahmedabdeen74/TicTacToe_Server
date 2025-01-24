@@ -87,7 +87,7 @@ public class ClientHandler extends Thread{
         try {
             if (soc != null && !soc.isClosed()) 
             {
-                 soc.close(); // Close the client socket to end the connection
+                soc.close(); // Close the client socket to end the connection
             }
         } catch (IOException e) {
              e.printStackTrace();
@@ -249,9 +249,11 @@ public class ClientHandler extends Thread{
                 break;
             default:
                 System.out.println("Unhandled message type: " + jsonMsg.get("type").toString());
+
         }
     }
         
+
             
        
     
