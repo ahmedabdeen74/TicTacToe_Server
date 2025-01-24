@@ -43,7 +43,7 @@ public class ClientHandler extends Thread{
     public static Vector<ClientHandler> clients = new Vector<ClientHandler>();
     public DTOPlayer playerData;
     public  static List<String> onlinePlayers = new ArrayList<>();
-   // static List<String> gamers = GameManager.gamePlayers;
+
     
     static Map<String, ClientHandler> onlinePlayerSocs = new HashMap<>();
     
@@ -142,43 +142,48 @@ public class ClientHandler extends Thread{
                   break;
             case "login":
             try {
-             System.out.println("Login-----------");
-             int res = DAO.validatePlayer(jsonMsg);
-             Map<String, String> result = new HashMap<>();
+                System.out.println("Login-----------");
+                int res = DAO.validatePlayer(jsonMsg);
+                Map<String, String> result = new HashMap<>();
 
-            if(res == 1)
-            {
-                playerData.setUsername(jsonMsg.get("username").toString());
-                playerData.setStatus(jsonMsg.get("status").toString());
-                int upRes=DAO.updateStatus(jsonMsg);
-                if(upRes==1){System.out.println("Status updateded");}
-                onlinePlayerSocs.put(playerData.getUsername(), this);
-                System.out.println("Hello-----------" +  playerData.getUsername() + " Login successfully");
-   
+               if(res == 1)
+               {
+                   playerData.setUsername(jsonMsg.get("username").toString());
+                   playerData.setStatus(jsonMsg.get("status").toString());
+                   int upRes=DAO.updateStatus(jsonMsg);
+                   
+                   if(upRes==1)
+                   {
+                       System.out.println("Status updateded");
+                   }
+                   
+                   onlinePlayerSocs.put(playerData.getUsername(), this);
+                   System.out.println("Hello-----------" +  playerData.getUsername() + " Login successfully");
 
 
-                // Get the player's current score
-                int score = DAO.getScore(playerData.getUsername());
-                playerData.setScore(score);
+
+                   // Get the player's current score
+                   int score = DAO.getScore(playerData.getUsername());
+                   playerData.setScore(score);
 
 
-                result.put("type", "login");
-                result.put("status", "" + res);
-                result.put("score", "" + score); // Send the score to the client
+                   result.put("type", "login");
+                   result.put("status", "" + res);
+                   result.put("score", "" + score); // Send the score to the client
 
-                onlinePlayers.add(playerData.getUsername());
-                controlerUI.addOnlinePlayer(playerData.getUsername());
-                }else{
-                    System.out.println("Hello-----------" + jsonMsg.get("username").toString() + " Login failed");
-                    result.put("type", "login");
-                    result.put("status", "" + res);
-                    }
+                   onlinePlayers.add(playerData.getUsername());
+                   controlerUI.addOnlinePlayer(playerData.getUsername());
+                   }else{
+                       System.out.println("Hello-----------" + jsonMsg.get("username").toString() + " Login failed");
+                       result.put("type", "login");
+                       result.put("status", "" + res);
+                       }
 
-                sendJSONResponse(result);
-                broadcastOnlineList();
-                }catch(SQLException ex) {
-                Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                   sendJSONResponse(result);
+                   broadcastOnlineList();
+                   }catch(SQLException ex) {
+                   Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                   }
                 break;
 
             case "sendGameReq":
@@ -294,9 +299,15 @@ public class ClientHandler extends Thread{
                 Platform.runLater(() -> {
                     controlerUI.removeOnlinePlayer(username);
                 });
-                Platform.runLater(() -> {
-                    controlerUI.removeInGamePlayer(username);
-                });
+                
+                if(controlerUI.isInGame(username)){
+                    
+                    GameManager.handlePlayerDisconnection(this);
+                    Platform.runLater(() -> {
+                        controlerUI.removeInGamePlayer(username);
+                    });
+                }
+
                 // Broadcast after removal
                 broadcastOnlineList();
             }

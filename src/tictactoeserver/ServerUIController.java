@@ -119,7 +119,12 @@ public class ServerUIController implements Initializable {
             Platform.runLater(() -> gamerData.remove(username));
         }
     }
-
+    
+    public boolean isInGame(String username){
+        return gamerData.contains(username);
+    }
+    
+    
     public void setStage(Stage stage) {
         this.stage = stage;
 
