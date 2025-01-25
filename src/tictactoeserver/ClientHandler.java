@@ -124,6 +124,7 @@ public class ClientHandler extends Thread{
 
                        result.put("type", "register");
                        result.put("status", "" + res);
+
                        result.put("score", ""+playerData.getScore()); // Send default score to the client
 
                        onlinePlayers.add(playerData.getUsername());
