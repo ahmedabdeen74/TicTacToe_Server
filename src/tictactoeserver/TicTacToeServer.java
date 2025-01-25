@@ -26,6 +26,7 @@ public class TicTacToeServer extends Application {
         ServerUIController controller = loader.getController();
         controller.setStage(stage); 
         Scene scene = new Scene(root);
+        stage.setTitle(" 🔧 SERVER TIC TAC TOE");
         
         stage.setScene(scene);
         stage.show();

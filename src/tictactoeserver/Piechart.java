@@ -34,7 +34,7 @@ public class Piechart extends Application {
         StackPane root = new StackPane(pieChart);
         Scene scene = new Scene(root, 400, 300);
 
-        stage.setTitle("Tic Tac Toe Server - User Status");
+        stage.setTitle(" 📊 Tic Tac Toe Server - User Status");
         stage.setScene(scene);
         stage.show();
     }
