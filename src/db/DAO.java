@@ -39,7 +39,7 @@ public class DAO {
         {
             System.out.println("Hello From createPlayer");
             PreparedStatement stmt = con.prepareStatement(
-                "INSERT INTO players (username,email, password, status) VALUES (?,?, ?, ?)"
+                "INSERT INTO players (username,email, password) VALUES (?,?, ?)"
             );
             String password= player.get("password").toString();
             String newPass=getEncryptedPassWord(password);
@@ -49,8 +49,7 @@ public class DAO {
             stmt.setString(1, player.get("username").toString()); 
             stmt.setString(2, email); 
             stmt.setString(3,newPass); 
-            stmt.setString(4, "offline"); 
-
+ 
             res = stmt.executeUpdate();
             System.out.println("res = "+ res);
             stmt.close();
@@ -60,21 +59,6 @@ public class DAO {
         }
     }
     
-//     public static int loginPlayer(JSONObject player) throws SQLException {
-        
-//         DriverManager.registerDriver(new ClientDriver());
-//         Connection con =  DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-       
-//         PreparedStatement stmt = con.prepareStatement(
-//             "SELECT * FROM Players WHERE username = ?"
-//         );
-        
-//         ResultSet rs = stmt.executeQuery();
-        
-        
-        
-//         return 0;
-//     }
 
     //Encrypt anf Decrypt
     public static String getEncryptedPassWord(String newPass)
@@ -102,36 +86,37 @@ public class DAO {
         return newPass;
     }
     
-    public static int updateStudent(JSONObject player) throws SQLException{
-     DriverManager.registerDriver(new ClientDriver());
-       Connection con=DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
-       PreparedStatement stmt=con.prepareStatement("UPDATE players SET username = ?, email = ?, password = ?,status=? WHERE username = ?" ,
-             ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        
-           stmt.setString(1, player.get("username").toString()); 
-            stmt.setString(2, player.get("email").toString()); 
-            stmt.setString(3, player.get("password").toString()); 
-            stmt.setString(4, player.get("status").toString()); 
-             stmt.setString(5, player.get("username").toString());
-            int rs=stmt.executeUpdate();
-             stmt.close();
-             con.close();
-            return rs;
-       
-    }
-        public static int updateStatus(JSONObject player) throws SQLException{
-            DriverManager.registerDriver(new ClientDriver());
-            Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            PreparedStatement stmt = con.prepareStatement("UPDATE players SET status=? WHERE username = ?",
-                    ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-            stmt.setString(1, player.get("status").toString());
-            stmt.setString(2, player.get("username").toString());
-            int rs = stmt.executeUpdate();
-            stmt.close();
-            con.close();
-            return rs;
-
-    }
+//    public static int updateStudent(JSONObject player) throws SQLException{
+//     DriverManager.registerDriver(new ClientDriver());
+//       Connection con=DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
+//       PreparedStatement stmt=con.prepareStatement("UPDATE players SET username = ?, email = ?, password = ?,status=? WHERE username = ?" ,
+//             ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+//        
+//           stmt.setString(1, player.get("username").toString()); 
+//            stmt.setString(2, player.get("email").toString()); 
+//            stmt.setString(3, player.get("password").toString()); 
+//            stmt.setString(4, player.get("status").toString()); 
+//             stmt.setString(5, player.get("username").toString());
+//            int rs=stmt.executeUpdate();
+//             stmt.close();
+//             con.close();
+//            return rs;
+//       
+//    }
+    
+//        public static int updateStatus(JSONObject player) throws SQLException{
+//            DriverManager.registerDriver(new ClientDriver());
+//            Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+//            PreparedStatement stmt = con.prepareStatement("UPDATE players SET status=? WHERE username = ?",
+//                    ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+//            stmt.setString(1, player.get("status").toString());
+//            stmt.setString(2, player.get("username").toString());
+//            int rs = stmt.executeUpdate();
+//            stmt.close();
+//            con.close();
+//            return rs;
+//
+//        }
           public static int updateStatus(String name,String status) throws SQLException{
             DriverManager.registerDriver(new ClientDriver());
             Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
@@ -145,42 +130,45 @@ public class DAO {
             return rs;
 
     }
-   public static JSONObject selectIndexPlayer(JSONObject player) throws SQLException {
-    String query = "SELECT * FROM Players WHERE username = ?";
-     Connection con=DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
-    PreparedStatement stmt = con.prepareStatement(query);
-    stmt.setString(1, player.get("username").toString());
-    ResultSet rs=stmt.executeQuery();
-    JSONObject result=new JSONObject();
-     while(rs.next()){
-                
-                result.put("username",rs.getString("username"));
-                result.put("email",rs.getString("email"));
-                result.put("password",rs.getString("password"));
-                result.put("status",rs.getString("status"));
-                }
-     System.out.println("Hello from the SelectIndex");
-    stmt.close();
-    con.close();
-    return result; 
-}
+          
+    public static JSONObject selectIndexPlayer(JSONObject player) throws SQLException {
+        String query = "SELECT * FROM Players WHERE username = ?";
+        Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        PreparedStatement stmt = con.prepareStatement(query);
+        stmt.setString(1, player.get("username").toString());
+        ResultSet rs = stmt.executeQuery();
+        JSONObject result = new JSONObject();
+        while (rs.next()) {
+
+            result.put("username", rs.getString("username"));
+            result.put("email", rs.getString("email"));
+            result.put("password", rs.getString("password"));
+            result.put("status", rs.getString("status"));
+        }
+        System.out.println("Hello from the SelectIndex");
+        stmt.close();
+        con.close();
+        return result;
+    }
+    
     public static int checkPlayer(JSONObject player) throws SQLException {
-    String query = "SELECT * FROM Players WHERE username = ?";
-    Connection con=DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
-    PreparedStatement stmt = con.prepareStatement(query);
-    stmt.setString(1, player.get("username").toString());
-    ResultSet rs=stmt.executeQuery();
-    int result=0;
-   
-     while(rs.next()){
-                result=1;
-                }
-    System.out.println("Hello from the SelectIndex");
-    stmt.close();
-    con.close();
-    return result; 
-}
-   public static int validatePlayer(JSONObject player) throws SQLException {
+        String query = "SELECT * FROM Players WHERE username = ?";
+        Connection con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        PreparedStatement stmt = con.prepareStatement(query);
+        stmt.setString(1, player.get("username").toString());
+        ResultSet rs = stmt.executeQuery();
+        int result = 0;
+
+        while (rs.next()) {
+            result = 1;
+        }
+        System.out.println("Hello from the SelectIndex");
+        stmt.close();
+        con.close();
+        return result;
+    }
+    
+    public static int validatePlayer(JSONObject player) throws SQLException {
         System.out.println("hello from login");
         String username = player.get("username").toString();
         String inputPassword = player.get("password").toString();

@@ -24,7 +24,7 @@ import tictactoeserver.ServerUIController;
 
 
 public class GameManager {
-    private static Map<String, GameSession> activeSessions = new HashMap<>();
+   private static Map<String, GameSession> activeSessions = new HashMap<>();
    public static List<String> gamePlayers = new ArrayList<>();
    static ServerUIController controlerUI;
     
@@ -32,6 +32,7 @@ public class GameManager {
     private static class GameSession {
         ClientHandler player1;  // X player
         ClientHandler player2;  // O player
+        
         String[][] board = new String[3][3];
         boolean isGameOver = false;
         
@@ -52,8 +53,8 @@ public class GameManager {
     
     
     // start the game then waiting for moves from the first player
-    public static void startNewGame(ClientHandler player1, ClientHandler player2,ServerUIController controlerUI) {
-        GameManager.controlerUI=controlerUI;
+    public static void startNewGame(ClientHandler player1, ClientHandler player2, ServerUIController controlerUI) {
+        GameManager.controlerUI = controlerUI;
         GameSession session = new GameSession(player1, player2);
         String sessionId = player1.playerData.getUsername() + "_vs_" + player2.playerData.getUsername();
         activeSessions.put(sessionId, session);
@@ -64,6 +65,7 @@ public class GameManager {
             return;
         }
         System.out.println(activeSessions.toString());
+        
         synchronized (gamePlayers) {
             gamePlayers.add(player1.playerData.getUsername());
             gamePlayers.add(player2.playerData.getUsername());
@@ -78,6 +80,7 @@ public class GameManager {
         p1Start.put("type", "gameStart");
         p1Start.put("symbol", "X");
         p1Start.put("opponent", player2.playerData.getUsername());
+        p1Start.put("score", player2.playerData.getScore());
         player1.sendMessage(p1Start.toJSONString());
         
         // Notify player2 (O)
@@ -85,6 +88,7 @@ public class GameManager {
         p2Start.put("type", "gameStart");
         p2Start.put("symbol", "O");
         p2Start.put("opponent", player1.playerData.getUsername());
+        p1Start.put("score", player1.playerData.getScore());
         player2.sendMessage(p2Start.toJSONString());
     }
     
@@ -217,9 +221,32 @@ public class GameManager {
         return null;
     }
 
+    
+    public static void handlePlayerDisconnection(ClientHandler disconnectedPlayer) {
+        String sessionId = findSessionId(disconnectedPlayer);
+        
+        if(sessionId != null){
+            GameSession session = activeSessions.get(sessionId);
+            ClientHandler opponent = session.player1.equals(disconnectedPlayer) ? session.player2: session.player1;
+            
+            JSONObject disconnectNotification  = new JSONObject();
+            disconnectNotification.put("type", "opponentDisconnected");
+            disconnectNotification.put("message", "Your opponent has disconnected. Returning to the home screen.");
+            opponent.sendMessage(disconnectNotification.toJSONString());
+            
+            activeSessions.remove(sessionId);
+            gamePlayers.remove(disconnectedPlayer.playerData.getUsername());
+            gamePlayers.remove(opponent.playerData.getUsername());
+            controlerUI.removeInGamePlayer(disconnectedPlayer.playerData.getUsername());
+            controlerUI.removeInGamePlayer(opponent.playerData.getUsername());
+            ClientHandler.onlinePlayers.add(opponent.playerData.getUsername());
+        }
+    
+    }
     private static void checkGameEnd(GameSession session) {
     String winner = checkWinner(session.board);
     System.out.println("Checking game end. Winner: " + winner);
+    int lScore=0;
 
     if (winner != null || isBoardFull(session.board)) {
         try {
@@ -231,14 +258,17 @@ public class GameManager {
                     if (winner.equals("X")) {
                         winnerName = session.player1.playerData.getUsername();
                         winnerHandler = session.player1;
+                        lScore=session.player2.playerData.getScore();
                     } else {
                         winnerName = session.player2.playerData.getUsername();
                         winnerHandler = session.player2;
+                       lScore=session.player1.playerData.getScore();
+
                     }
                     
                     // Update the winner's score
                     int currentScore = DAO.getScore(winnerName);
-                    int newScore = currentScore + 1; // Increment score by 1
+                    int newScore = currentScore + 10; // Increment score by 1
                     DAO.updateScore(winnerName, newScore);
                     
                     JSONObject p1Msg = new JSONObject();
@@ -256,10 +286,12 @@ public class GameManager {
                         // Player 2 loses
                         p2Msg.put("result", "lose");
                         p2Msg.put("winner", winnerName);
+                        p2Msg.put("score", lScore);
                     } else {
                         // Player 2 wins
                         p1Msg.put("result", "lose");
                         p1Msg.put("winner", winnerName);
+                        p1Msg.put("score", lScore);
                         
                         // Player 1 loses
                         p2Msg.put("result", "win");
@@ -277,6 +309,7 @@ public class GameManager {
                     JSONObject drawMsg = new JSONObject();
                     drawMsg.put("type", "gameEnd");
                     drawMsg.put("result", "draw");
+                  
                     
                     // Send draw message to both players
                     session.player1.sendMessage(drawMsg.toJSONString());
@@ -285,7 +318,6 @@ public class GameManager {
                     
                     // Broadcast updated online list
                     new Thread(() -> {
-                        
                         synchronized(ClientHandler.clients) {
                             ClientHandler.broadcastOnlineList();
                         }

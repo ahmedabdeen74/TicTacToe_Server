@@ -71,6 +71,9 @@ public class ServerManager {
     public void stopServer() {
         running = false;
         try {
+            // Broadcast server shutdown message to all clients
+            broadcastServerShutdown();
+            
             if(serverGame != null && !serverGame.isClosed()) 
             {
                 serverGame.close();
@@ -79,6 +82,9 @@ public class ServerManager {
              // Interrupt each client handler thread 
             for(ClientHandler handler : clientHandlers) 
             {
+                JSONObject msg = new JSONObject();
+                msg.put("type", "serverDisconnection");
+                handler.ps.println(msg.toJSONString());
                 handler.stopHandler(); // Make sure to stop each client processing
             }
         } catch (IOException ex) {
@@ -86,5 +92,13 @@ public class ServerManager {
         }
     }
     
-}
+    private void broadcastServerShutdown() {
+        JSONObject shutdownMessage = new JSONObject();
+        shutdownMessage.put("type", "serverShutdown");
+        shutdownMessage.put("message", "Server is shutting down. Please reconnect later.");
 
+        for (ClientHandler handler : clientHandlers) {
+            handler.sendMessage(shutdownMessage.toJSONString());
+        }
+    }
+}
