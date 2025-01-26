@@ -7,7 +7,7 @@ The Tic Tac Toe Server manages game sessions for a multiplayer Tic Tac Toe appli
 ## Features
 
 - Handles player login and registration.
-- Manages active game sessions and player statuses.
+- Manages active game sessions.
 - Notifies opponents when a player disconnects.
 - Synchronizes the game state between two players.
 
@@ -35,7 +35,8 @@ The Tic Tac Toe Server manages game sessions for a multiplayer Tic Tac Toe appli
    ```bash
    java -cp bin TicTacToeServer
    ```
-
+## Client repo : 
+https://github.com/AmanyAdel2/TicTacToe_Client
 ## Database Setup
 
 1. Create a table named `players` in Apache Derby:
